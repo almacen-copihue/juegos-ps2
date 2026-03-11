@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Bodega · Almacén Copihue</title>
+<link rel="icon" href="iconos-pwa/android/android-launchericon-48-48.png">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0d0f; --s1:#13151a; --s2:#1b1e25;
+  --b:rgba(255,255,255,.06); --b2:rgba(255,255,255,.12);
+  --tx:#dde3ed; --mu:rgba(221,227,237,.4);
+  --r1:#ff4444; --r2:#ff8800; --r3:#ffcc00; --g1:#44ff88; --g2:#00ccff;
+  --venc-crit:#ff2222; --venc-alto:#ff6600; --venc-med:#ffaa00; --venc-ok:#22cc66;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:'IBM Plex Sans',sans-serif;min-height:100vh}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:200;background:rgba(12,13,15,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--b);padding:11px 14px;display:flex;align-items:center;gap:10px}
+.nav-back{background:var(--s2);border:1px solid var(--b2);color:var(--tx);border-radius:7px;padding:6px 12px;font-size:.78rem;font-family:'IBM Plex Mono',monospace;text-decoration:none;display:flex;align-items:center;gap:4px;transition:background .15s}
+.nav-back:hover{background:var(--s1)}
+.nav-title{font-size:1rem;font-weight:700;letter-spacing:.5px;flex:1;font-family:'IBM Plex Mono',monospace}
+.nav-links{display:flex;gap:5px}
+.nav-pill{background:var(--s2);border:1px solid var(--b);color:var(--mu);border-radius:20px;padding:4px 10px;font-size:.7rem;font-family:'IBM Plex Mono',monospace;text-decoration:none;transition:all .15s;white-space:nowrap}
+.nav-pill:hover{color:var(--tx);border-color:var(--b2)}
+.nav-pill.gr{background:rgba(68,255,136,.08);border-color:rgba(68,255,136,.3);color:var(--g1)}
+
+/* TABS */
+.tabs{display:flex;background:var(--s1);border-bottom:1px solid var(--b);padding:0 14px;gap:0;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:12px 16px;font-size:.78rem;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;background:none;border-left:none;border-right:none;border-top:none}
+.tab.act{color:var(--tx);border-bottom-color:var(--g2)}
+.tab .cnt{background:var(--r1);color:white;border-radius:10px;padding:1px 6px;font-size:.62rem;margin-left:5px;display:inline-block}
+.tab .cnt.ok{background:var(--venc-ok)}
+.tab .cnt.warn{background:var(--r2)}
+
+/* MAIN */
+.main{max-width:720px;margin:0 auto;padding:14px 12px 100px}
+
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--b);border-radius:14px;overflow:hidden;margin-bottom:12px;animation:fu .3s ease both}
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card-hdr{padding:12px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:9px}
+.card-ico{font-size:1.1rem}
+.card-ttl{font-weight:700;font-size:.9rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;flex:1}
+.card-sub{font-size:.68rem;color:var(--mu);margin-top:1px}
+.card-cnt{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--mu)}
+.card-body{padding:12px 14px}
+
+/* ALERTAS SUMMARY */
+.alert-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.alert-card{border-radius:10px;padding:12px;border:1px solid;position:relative;overflow:hidden}
+.alert-card.crit{background:rgba(255,34,34,.08);border-color:rgba(255,34,34,.3)}
+.alert-card.alto{background:rgba(255,102,0,.08);border-color:rgba(255,102,0,.3)}
+.alert-card.med{background:rgba(255,170,0,.08);border-color:rgba(255,170,0,.3)}
+.alert-card.bajo{background:rgba(34,204,102,.08);border-color:rgba(34,204,102,.3)}
+.alert-n{font-family:'IBM Plex Mono',monospace;font-size:2rem;font-weight:700;line-height:1}
+.alert-n.crit{color:var(--venc-crit)}.alert-n.alto{color:var(--venc-alto)}.alert-n.med{color:var(--venc-med)}.alert-n.bajo{color:var(--venc-ok)}
+.alert-lbl{font-size:.65rem;color:var(--mu);margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+
+/* ITEM PRODUCTO */
+.prod-item{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:11px 12px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px}
+.prod-alerta{flex-shrink:0;width:4px;align-self:stretch;border-radius:2px}
+.prod-alerta.crit{background:var(--venc-crit)}
+.prod-alerta.alto{background:var(--venc-alto)}
+.prod-alerta.med{background:var(--venc-med)}
+.prod-alerta.ok{background:var(--venc-ok)}
+.prod-alerta.sin{background:var(--mu)}
+.prod-info{flex:1;min-width:0}
+.prod-nombre{font-weight:700;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prod-meta{font-size:.7rem;color:var(--mu);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+.prod-right{flex-shrink:0;text-align:right}
+.prod-badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.pb-crit{background:rgba(255,34,34,.2);color:var(--venc-crit);border:1px solid rgba(255,34,34,.3)}
+.pb-alto{background:rgba(255,102,0,.2);color:var(--venc-alto);border:1px solid rgba(255,102,0,.3)}
+.pb-med{background:rgba(255,170,0,.2);color:var(--venc-med);border:1px solid rgba(255,170,0,.3)}
+.pb-ok{background:rgba(34,204,102,.15);color:var(--venc-ok);border:1px solid rgba(34,204,102,.25)}
+.pb-sin{background:var(--s1);color:var(--mu);border:1px solid var(--b)}
+.pb-rojo{background:rgba(255,68,68,.15);color:#ff6666;border:1px solid rgba(255,68,68,.3)}
+.pb-verde{background:rgba(68,255,136,.12);color:var(--g1);border:1px solid rgba(68,255,136,.25)}
+.pb-naranja{background:rgba(255,136,0,.15);color:#ffaa44;border:1px solid rgba(255,136,0,.3)}
+
+/* STOCK BAR */
+.stk-wrap{margin-top:5px;height:4px;background:var(--s1);border-radius:2px;overflow:hidden}
+.stk-fill{height:100%;border-radius:2px}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.kpi{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:10px;text-align:center}
+.kpi-n{font-family:'IBM Plex Mono',monospace;font-size:1.3rem;font-weight:700}
+.kpi-l{font-size:.62rem;color:var(--mu);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+
+/* CATEGORIA BADGE */
+.cat-badge{display:inline-block;background:var(--s1);border:1px solid var(--b);border-radius:6px;padding:1px 7px;font-size:.63rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px}
+
+/* EMPTY */
+.empty{text-align:center;color:var(--mu);font-size:.85rem;padding:24px;background:var(--s2);border-radius:10px}
+.spin{width:26px;height:26px;border:2px solid var(--s2);border-top-color:var(--g2);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SECTION HIDDEN */
+.tab-section{display:none}
+.tab-section.act{display:block}
+
+/* BUSCAR */
+.buscar-wrap{margin-bottom:10px}
+.buscar{width:100%;background:var(--s2);border:1px solid var(--b2);color:var(--tx);border-radius:10px;padding:9px 12px;font-size:.85rem;font-family:'IBM Plex Sans',sans-serif;outline:none}
+.buscar:focus{border-color:var(--g2)}
+.buscar::placeholder{color:var(--mu)}
+
+/* DIVIDER */
+.divider-lbl{font-family:'IBM Plex Mono',monospace;font-size:.65rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+.divider-lbl::after{content:'';flex:1;height:1px;background:var(--b)}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--s1);color:white;padding:8px 16px;border-radius:8px;font-size:.82rem;font-weight:600;z-index:9999;transition:transform .2s;pointer-events:none;border-left:3px solid var(--g2)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-back">← POS</a>
+  <div style="flex:1">
+    <div class="nav-title">🏭 BODEGA</div>
+    <div id="navSub" style="font-size:.65rem;color:var(--mu);font-family:'IBM Plex Mono',monospace;margin-top:1px">Cargando inventario...</div>
+  </div>
+  <div class="nav-links">
+    <a href="reporte-ventas.html" class="nav-pill">📈 Ventas</a>
+    <a href="ofertas-admin.html" class="nav-pill gr">⚡ Ofertas</a>
+  </div>
+</nav>
+
+<div class="tabs" id="tabs">
+  <button class="tab act" onclick="setTab('venc')">⏰ Vencimientos <span class="cnt" id="cntVenc">—</span></button>
+  <button class="tab" onclick="setTab('falt')">⚠️ Faltantes <span class="cnt warn" id="cntFalt">—</span></button>
+  <button class="tab" onclick="setTab('sob')">📦 Sobrantes <span class="cnt ok" id="cntSob">—</span></button>
+  <button class="tab" onclick="setTab('emp')">🚀 A empujar <span class="cnt warn" id="cntEmp">—</span></button>
+  <button class="tab" onclick="setTab('inv')">🗂 Inventario</button>
+</div>
+
+<div class="main" id="main">
+  <div style="text-align:center;padding:40px"><div class="spin"></div><div style="color:var(--mu);font-size:.85rem">Cargando inventario...</div></div>
+</div>
+
+<div id="toast"></div>
+
+<!-- TAB SECTIONS -->
+<div id="sec-venc" class="tab-section act" style="display:none"></div>
+<div id="sec-falt" class="tab-section" style="display:none"></div>
+<div id="sec-sob" class="tab-section" style="display:none"></div>
+<div id="sec-emp" class="tab-section" style="display:none"></div>
+<div id="sec-inv" class="tab-section" style="display:none"></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbxhKFk2WAi-KRY5xGBsI6_6Pvp3jDjt8mSRXvy7I1WehNmBpJamqK9G9Q1ZJSCSgAdfDA/exec';
+const fmt = n => '$'+Math.round(n).toLocaleString('es-AR');
+
+let productos = [];
+let rawReportes = null;
+let tabActual = 'venc';
+let filtroInv = '';
+
+function hoyStr() {
+  const n=new Date(), a=new Date(n.toLocaleString('en-US',{timeZone:'America/Argentina/Buenos_Aires'}));
+  return a.getFullYear()+'-'+String(a.getMonth()+1).padStart(2,'0')+'-'+String(a.getDate()).padStart(2,'0');
+}
+function parseFecha(s) {
+  if(!s)return null;
+  try{const[y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d);}catch(e){return null;}
+}
+function diasHasta(s) {
+  if(!s)return null;
+  const hoy=new Date();hoy.setHours(0,0,0,0);
+  const v=parseFecha(s); if(!v)return null;
+  return Math.round((v-hoy)/86400000);
+}
+
+// ── CARGA ──
+async function cargar() {
+  try {
+    const [rProd, rRep] = await Promise.all([
+      fetch(API_URL+'?cache='+Date.now(),{redirect:'follow',signal:AbortSignal.timeout(15000)}),
+      fetch(API_URL+'?action=getReportes',{redirect:'follow',signal:AbortSignal.timeout(20000)})
+    ]);
+    const dProd = await rProd.json();
+    const dRep = await rRep.json();
+    rawReportes = dRep;
+
+    productos = (dProd.productos||[]).map(p=>({
+      id:      p[3],
+      nombre:  p[0],
+      precio:  parseFloat(p[1])||0,
+      categoria: (p[2]||'SIN CAT').toUpperCase(),
+      stock:   parseFloat(p[5])||0,
+      relampago: parseInt(p[6])||0,
+      rotacion: parseFloat(p[14])||3,
+      stockMin: parseFloat(p[13])||1,
+      vencimiento: p[15]||'',
+      costo:   parseFloat(p[9])||0,
+    })).filter(p=>p.nombre&&p.nombre.trim());
+
+    // Calcular ventas recientes por producto (últimos 30 días)
+    const hoy = hoyStr();
+    const hace30 = (()=>{const d=new Date();d.setDate(d.getDate()-30);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})();
+    const ventasRecientes = {};
+    if (rawReportes && rawReportes.items) {
+      rawReportes.items.filter(i=>i.fechaStr>=hace30&&i.fechaStr<=hoy).forEach(i=>{
+        if(i.nombre) ventasRecientes[i.nombre]=(ventasRecientes[i.nombre]||0)+(i.qty||0);
+      });
+    }
+    productos.forEach(p=>{p.ventasRecientes = ventasRecientes[p.nombre]||0;});
+
+    document.getElementById('navSub').textContent = productos.length+' productos · '+new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    renderTodo();
+  } catch(e) {
+    document.getElementById('main').innerHTML = '<div style="padding:30px;text-align:center;color:#ff6666">❌ '+e.message+'</div>';
+  }
+}
+
+// ── CLASIFICACIONES ──
+function claseVenc(dias) {
+  if(dias===null)return null;
+  if(dias<0)return'crit';
+  if(dias<=3)return'crit';
+  if(dias<=7)return'alto';
+  if(dias<=15)return'med';
+  return'ok';
+}
+function badgeVenc(dias) {
+  if(dias===null)return{cls:'pb-sin',txt:'Sin fecha'};
+  if(dias<0)return{cls:'pb-crit',txt:'VENCIDO'};
+  if(dias===0)return{cls:'pb-crit',txt:'Vence HOY'};
+  if(dias<=3)return{cls:'pb-crit',txt:dias+'d ⚠️'};
+  if(dias<=7)return{cls:'pb-alto',txt:dias+'d'};
+  if(dias<=15)return{cls:'pb-med',txt:dias+'d'};
+  return{cls:'pb-ok',txt:dias+'d ✓'};
+}
+
+function getVenc() {
+  return productos.filter(p=>p.vencimiento&&p.stock>0)
+    .map(p=>({...p,dias:diasHasta(p.vencimiento)}))
+    .filter(p=>p.dias!==null&&p.dias<=30)
+    .sort((a,b)=>a.dias-b.dias);
+}
+
+function getFaltantes() {
+  // Sin stock O stock por debajo del mínimo
+  return productos.filter(p=>p.stock<=0 || (p.stockMin>0&&p.stock<p.stockMin))
+    .sort((a,b)=>{
+      if(a.stock===0&&b.stock>0)return-1;
+      if(b.stock===0&&a.stock>0)return 1;
+      return b.ventasRecientes-a.ventasRecientes; // más vendidos primero
+    });
+}
+
+function getSobrantes() {
+  // Stock muy por encima del mínimo Y baja rotación
+  return productos.filter(p=>{
+    const ratio = p.stockMin>0 ? p.stock/p.stockMin : p.stock/5;
+    return p.stock>0 && ratio>3 && p.rotacion<=3;
+  }).sort((a,b)=>{
+    const ra = p => p.stockMin>0?p.stock/p.stockMin:p.stock/5;
+    return ra(b)-ra(a);
+  });
+}
+
+function getEmpujar() {
+  // Vence pronto + tiene stock suficiente, o sobrante con baja rotación
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const empujar = [];
+  productos.forEach(p=>{
+    const dias = diasHasta(p.vencimiento);
+    const ratio = p.stockMin>0 ? p.stock/p.stockMin : 1;
+    let urgencia = 0; let razon = [];
+
+    if(dias!==null && dias>=0 && dias<=15 && p.stock>0) {
+      urgencia += (16-dias)*3;
+      razon.push('Vence en '+dias+'d');
+    }
+    if(p.rotacion<=2 && p.stock>0) {
+      urgencia += 10;
+      razon.push('Rotación lenta');
+    }
+    if(ratio>4 && p.stock>0) {
+      urgencia += 5;
+      razon.push('Exceso stock ×'+Math.round(ratio));
+    }
+    if(urgencia>0 && !(p.relampago>0)) {
+      // no está en oferta, hay que empujarlo
+      empujar.push({...p,urgencia,razon,dias});
+    }
+  });
+  return empujar.sort((a,b)=>b.urgencia-a.urgencia).slice(0,40);
+}
+
+// ── RENDER TABS ──
+function renderTodo() {
+  const venc = getVenc();
+  const falt = getFaltantes();
+  const sob = getSobrantes();
+  const emp = getEmpujar();
+
+  // Contadores tabs
+  document.getElementById('cntVenc').textContent = venc.filter(p=>p.dias<=7).length||'✓';
+  if(venc.filter(p=>p.dias<=7).length===0)document.getElementById('cntVenc').className='cnt ok';
+  document.getElementById('cntFalt').textContent = falt.length||'✓';
+  if(!falt.length)document.getElementById('cntFalt').className='cnt ok';
+  document.getElementById('cntSob').textContent = sob.length||'—';
+  document.getElementById('cntEmp').textContent = emp.length||'—';
+
+  renderSeccion();
+}
+
+function renderSeccion() {
+  const venc = getVenc();
+  const falt = getFaltantes();
+  const sob = getSobrantes();
+  const emp = getEmpujar();
+  const inv = productos.filter(p=>filtroInv?p.nombre.toLowerCase().includes(filtroInv.toLowerCase())||p.categoria.toLowerCase().includes(filtroInv.toLowerCase()):true);
+
+  let html = '';
+
+  if (tabActual === 'venc') {
+    // Alertas rápidas
+    const crit = venc.filter(p=>p.dias<=3).length;
+    const semana = venc.filter(p=>p.dias>3&&p.dias<=7).length;
+    const quincena = venc.filter(p=>p.dias>7&&p.dias<=15).length;
+    const mes = venc.filter(p=>p.dias>15).length;
+
+    html += '<div class="alert-grid">'+
+      '<div class="alert-card crit"><div class="alert-n crit">'+crit+'</div><div class="alert-lbl">Crítico (0-3d)</div></div>'+
+      '<div class="alert-card alto"><div class="alert-n alto">'+semana+'</div><div class="alert-lbl">Esta semana</div></div>'+
+      '<div class="alert-card med"><div class="alert-n med">'+quincena+'</div><div class="alert-lbl">Próximos 15d</div></div>'+
+      '<div class="alert-card bajo"><div class="alert-n bajo">'+mes+'</div><div class="alert-lbl">Hasta 30 días</div></div>'+
+    '</div>';
+
+    if (!venc.length) {
+      html += '<div class="empty">✅ Sin productos próximos a vencer</div>';
+    } else {
+      if(crit>0){html+='<div class="divider-lbl">🔴 Crítico — vence en 0–3 días</div>'+renderVencList(venc.filter(p=>p.dias<=3));}
+      if(semana>0){html+='<div class="divider-lbl">🟠 Esta semana — 4–7 días</div>'+renderVencList(venc.filter(p=>p.dias>3&&p.dias<=7));}
+      if(quincena>0){html+='<div class="divider-lbl">🟡 Próximos 15 días</div>'+renderVencList(venc.filter(p=>p.dias>7&&p.dias<=15));}
+      if(mes>0){html+='<div class="divider-lbl">🟢 Hasta fin de mes</div>'+renderVencList(venc.filter(p=>p.dias>15));}
+    }
+  }
+
+  else if (tabActual === 'falt') {
+    const sinStock = falt.filter(p=>p.stock<=0);
+    const bajoMin = falt.filter(p=>p.stock>0);
+
+    html += '<div class="kpi-row">'+
+      '<div class="kpi"><div class="kpi-n" style="color:var(--r1)">'+sinStock.length+'</div><div class="kpi-l">Sin stock</div></div>'+
+      '<div class="kpi"><div class="kpi-n" style="color:var(--r2)">'+bajoMin.length+'</div><div class="kpi-l">Bajo mínimo</div></div>'+
+      '<div class="kpi"><div class="kpi-n" style="color:var(--mu)">'+falt.length+'</div><div class="kpi-l">Total</div></div>'+
+    '</div>';
+
+    if (!falt.length) {
+      html += '<div class="empty">✅ Todo el inventario está bien</div>';
+    } else {
+      if(sinStock.length){
+        html += '<div class="divider-lbl">⛔ Sin stock</div>';
+        sinStock.forEach(p=>{
+          html += '<div class="prod-item">'+
+            '<div class="prod-alerta crit"></div>'+
+            '<div class="prod-info">'+
+              '<div class="prod-nombre">'+p.nombre+'</div>'+
+              '<div class="prod-meta">'+
+                '<span class="cat-badge">'+p.categoria+'</span>'+
+                '<span>Rot: '+p.rotacion+'</span>'+
+                (p.ventasRecientes>0?'<span>30d: '+Math.round(p.ventasRecientes)+' u</span>':'')+
+              '</div>'+
+            '</div>'+
+            '<div class="prod-right"><span class="prod-badge pb-crit">SIN STOCK</span></div>'+
+          '</div>';
+        });
+      }
+      if(bajoMin.length){
+        html += '<div class="divider-lbl">⚠️ Bajo mínimo</div>';
+        bajoMin.forEach(p=>{
+          const ratio = p.stockMin>0?p.stock/p.stockMin:1;
+          const pctBar = Math.min(100,Math.round(ratio*100));
+          html += '<div class="prod-item">'+
+            '<div class="prod-alerta alto"></div>'+
+            '<div class="prod-info">'+
+              '<div class="prod-nombre">'+p.nombre+'</div>'+
+              '<div class="prod-meta">'+
+                '<span class="cat-badge">'+p.categoria+'</span>'+
+                '<span>Stock: <strong>'+p.stock+'</strong> / mín '+p.stockMin+'</span>'+
+                (p.ventasRecientes>0?'<span>30d: '+Math.round(p.ventasRecientes)+' u</span>':'')+
+              '</div>'+
+              '<div class="stk-wrap"><div class="stk-fill" style="width:'+pctBar+'%;background:var(--r2)"></div></div>'+
+            '</div>'+
+            '<div class="prod-right"><span class="prod-badge pb-naranja">'+p.stock+' / '+p.stockMin+'</span></div>'+
+          '</div>';
+        });
+      }
+    }
+  }
+
+  else if (tabActual === 'sob') {
+    html += '<div style="background:rgba(68,255,136,.06);border:1px solid rgba(68,255,136,.15);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:.78rem;color:rgba(68,255,136,.8)">'+
+      '📦 Productos con stock excesivo para su velocidad de venta. Considerá hacer ofertas o redistribuir.'+
+    '</div>';
+
+    if (!sob.length) {
+      html += '<div class="empty">✅ No hay sobrantes detectados</div>';
+    } else {
+      sob.forEach(p=>{
+        const ratio = p.stockMin>0 ? p.stock/p.stockMin : p.stock/5;
+        const semanas = p.ventasRecientes>0 ? Math.round(p.stock/(p.ventasRecientes/4)) : null;
+        html += '<div class="prod-item">'+
+          '<div class="prod-alerta med"></div>'+
+          '<div class="prod-info">'+
+            '<div class="prod-nombre">'+p.nombre+'</div>'+
+            '<div class="prod-meta">'+
+              '<span class="cat-badge">'+p.categoria+'</span>'+
+              '<span>Stock: <strong>'+p.stock+'</strong></span>'+
+              '<span>Rot: '+p.rotacion+'/5</span>'+
+              (semanas?'<span>~'+semanas+' sem. para agotar</span>':'')+
+              (p.ventasRecientes>0?'<span>30d: '+Math.round(p.ventasRecientes)+' u</span>':'<span style="color:var(--r1)">Sin ventas recientes</span>')+
+            '</div>'+
+          '</div>'+
+          '<div class="prod-right">'+
+            '<span class="prod-badge pb-med">×'+Math.round(ratio)+' mín</span>'+
+            (p.vencimiento?'<br><span style="font-size:.62rem;color:var(--mu);margin-top:3px;display:block">Vence: '+p.vencimiento+'</span>':'')+
+          '</div>'+
+        '</div>';
+      });
+    }
+  }
+
+  else if (tabActual === 'emp') {
+    html += '<div style="background:rgba(255,136,0,.06);border:1px solid rgba(255,136,0,.2);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:.78rem;color:rgba(255,170,68,.9)">'+
+      '🚀 Estos productos necesitan impulso — aún sin oferta activa. Priorizados por urgencia.'+
+    '</div>';
+
+    if (!emp.length) {
+      html += '<div class="empty">✅ No hay productos críticos sin oferta</div>';
+    } else {
+      emp.forEach(p=>{
+        const descSugerido = p.dias!==null&&p.dias<=3?25:p.dias!==null&&p.dias<=7?20:p.rotacion<=2?15:10;
+        const precioOferta = Math.round(p.precio*(1-descSugerido/100));
+        html += '<div class="prod-item">'+
+          '<div class="prod-alerta '+(p.dias!==null&&p.dias<=3?'crit':p.dias!==null&&p.dias<=7?'alto':'med')+'"></div>'+
+          '<div class="prod-info">'+
+            '<div class="prod-nombre">'+p.nombre+'</div>'+
+            '<div class="prod-meta">'+
+              '<span class="cat-badge">'+p.categoria+'</span>'+
+              p.razon.map(r=>'<span>'+r+'</span>').join('')+
+              '<span>Stock: '+p.stock+'</span>'+
+              (p.ventasRecientes>0?'<span>30d: '+Math.round(p.ventasRecientes)+' u</span>':'<span style="color:var(--r1)">Sin ventas 30d</span>')+
+            '</div>'+
+          '</div>'+
+          '<div class="prod-right" style="min-width:80px">'+
+            '<span class="prod-badge pb-naranja" style="display:block;text-align:right;margin-bottom:3px">-'+descSugerido+'% sugerido</span>'+
+            '<span style="font-size:.65rem;color:var(--mu);display:block;text-align:right">'+fmt(p.precio)+' → '+fmt(precioOferta)+'</span>'+
+          '</div>'+
+        '</div>';
+      });
+    }
+  }
+
+  else if (tabActual === 'inv') {
+    html += '<div class="buscar-wrap"><input class="buscar" type="text" placeholder="🔍 Buscar producto o categoría..." oninput="filtroInv=this.value;renderSeccion()" value="'+filtroInv+'"></div>';
+
+    // Agrupar por categoría
+    const cats = {};
+    inv.forEach(p=>{
+      if(!cats[p.categoria])cats[p.categoria]=[];
+      cats[p.categoria].push(p);
+    });
+
+    const totalProd = inv.length;
+    const sinStock = inv.filter(p=>p.stock<=0).length;
+    const conVenc = inv.filter(p=>p.vencimiento).length;
+
+    html += '<div class="kpi-row" style="margin-bottom:12px">'+
+      '<div class="kpi"><div class="kpi-n">'+totalProd+'</div><div class="kpi-l">Productos</div></div>'+
+      '<div class="kpi"><div class="kpi-n" style="color:var(--r1)">'+sinStock+'</div><div class="kpi-l">Sin stock</div></div>'+
+      '<div class="kpi"><div class="kpi-n" style="color:var(--g2)">'+conVenc+'</div><div class="kpi-l">Con venc.</div></div>'+
+    '</div>';
+
+    if (!inv.length) {
+      html += '<div class="empty">Sin resultados</div>';
+    } else {
+      Object.entries(cats).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([cat,prods])=>{
+        html += '<div class="divider-lbl">'+cat+' ('+prods.length+')</div>';
+        prods.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(p=>{
+          const dias = diasHasta(p.vencimiento);
+          const {cls:bCls, txt:bTxt} = badgeVenc(dias);
+          const stkColor = p.stock<=0?'var(--r1)':p.stock<=p.stockMin?'var(--r2)':p.stock<=p.stockMin*2?'var(--r3)':'var(--g1)';
+          html += '<div class="prod-item" style="padding:8px 10px">'+
+            '<div class="prod-alerta '+(p.stock<=0?'crit':dias!==null&&dias<=7?'alto':'sin')+'"></div>'+
+            '<div class="prod-info">'+
+              '<div class="prod-nombre" style="font-size:.82rem">'+p.nombre+'</div>'+
+              '<div class="prod-meta">'+
+                '<span style="color:'+stkColor+'">'+p.stock+' u</span>'+
+                '<span>'+fmt(p.precio)+'</span>'+
+                (p.vencimiento?'<span style="color:'+(dias!==null&&dias<=7?'var(--r2)':'var(--mu)')+'">Vence: '+p.vencimiento+'</span>':'')+
+              '</div>'+
+            '</div>'+
+            '<div class="prod-right">'+
+              (p.vencimiento?'<span class="prod-badge '+bCls+'">'+bTxt+'</span>':'<span class="prod-badge pb-sin">sin fecha</span>')+
+            '</div>'+
+          '</div>';
+        });
+      });
+    }
+  }
+
+  document.getElementById('main').innerHTML = html;
+}
+
+function renderVencList(list) {
+  return list.map(p=>{
+    const {cls,txt}=badgeVenc(p.dias);
+    const vcls = claseVenc(p.dias);
+    return '<div class="prod-item">'+
+      '<div class="prod-alerta '+(vcls||'sin')+'"></div>'+
+      '<div class="prod-info">'+
+        '<div class="prod-nombre">'+p.nombre+'</div>'+
+        '<div class="prod-meta">'+
+          '<span class="cat-badge">'+p.categoria+'</span>'+
+          '<span>Stock: <strong>'+p.stock+'</strong> u</span>'+
+          '<span>Rot: '+p.rotacion+'/5</span>'+
+          (p.ventasRecientes>0?'<span>30d: '+Math.round(p.ventasRecientes)+' u</span>':'<span style="color:var(--r1)">Sin ventas recientes</span>')+
+          (p.relampago>0?'<span style="color:#ffcc00">⚡ En oferta</span>':'')+
+        '</div>'+
+      '</div>'+
+      '<div class="prod-right">'+
+        '<span class="prod-badge '+cls+'">'+txt+'</span>'+
+        '<div style="font-size:.62rem;color:var(--mu);margin-top:3px;text-align:right">'+p.vencimiento+'</div>'+
+        (p.relampago<=0&&p.stock>0?
+          '<div style="margin-top:5px"><button onclick="activarOfertaRapida('+p.id+','+p.dias+')" style="background:rgba(255,136,0,.2);border:1px solid rgba(255,136,0,.35);color:#ffaa44;border-radius:6px;padding:3px 8px;font-size:.65rem;font-weight:700;cursor:pointer;font-family:inherit">⚡ Activar oferta</button></div>':'')+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ── TAB SWITCH ──
+function setTab(t) {
+  tabActual = t;
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('act',['venc','falt','sob','emp','inv'][i]===t);
+  });
+  filtroInv = '';
+  renderSeccion();
+  window.scrollTo(0,0);
+}
+
+// ── ACTIVAR OFERTA RÁPIDA ──
+window.activarOfertaRapida = async function(id, dias) {
+  const tipo = dias<=3?14:dias<=7?13:dias<=14?12:11;
+  toast('⏳ Activando oferta...');
+  try {
+    const url = API_URL+'?action=relampago&data='+encodeURIComponent(JSON.stringify({productoId:id,tipo,limpiarOfertas:true}));
+    const r = await fetch(url,{redirect:'follow',signal:AbortSignal.timeout(15000)});
+    const res = await r.json();
+    if(res.success){
+      const p = productos.find(x=>x.id===id);
+      if(p)p.relampago=tipo;
+      toast('✅ Oferta activada');
+      renderSeccion();
+    } else {
+      toast('❌ '+(res.mensaje||'Error'));
+    }
+  } catch(e) { toast('❌ Error de conexión'); }
+};
+
+function toast(msg) {
+  const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+// ── INIT ──
+cargar();
+</script>
+</body>
+</html>

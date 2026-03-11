@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ofertas — Almacén Copihue</title>
+<link rel="icon" href="iconos-pwa/android/android-launchericon-48-48.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0e0f11;
+    --surface:   #161820;
+    --border:    rgba(255,255,255,0.07);
+    --text:      #e8eaf0;
+    --muted:     rgba(232,234,240,0.45);
+    --rel:       #f9a825;
+    --dest:      #ff6f00;
+    --esp:       #00bcd4;
+    --ult:       #e53935;
+    --cerv:      #f9a825;
+    --verde:     #43a047;
+    --rojo:      #e53935;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ─────────────────────────────── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-back {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 0.85rem;
+    font-family: 'Barlow', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .header-back:hover { background: rgba(255,255,255,0.12); }
+
+  .header-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.35rem;
+    letter-spacing: 0.5px;
+    flex: 1;
+  }
+
+  .header-reloj {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* ── TOAST ───────────────────────────────── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #212121;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 9999;
+    transition: transform 0.25s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.verde { border-left: 4px solid var(--verde); }
+  #toast.rojo  { border-left: 4px solid var(--rojo); }
+  #toast.naranja { border-left: 4px solid var(--dest); }
+
+  /* ── LAYOUT ──────────────────────────────── */
+  .main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 16px 12px 80px;
+  }
+
+  /* ── SECCIÓN ─────────────────────────────── */
+  .seccion {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .seccion-header {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .seccion-emoji { font-size: 1.3rem; }
+
+  .seccion-titulo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.15rem;
+    letter-spacing: 0.3px;
+    flex: 1;
+  }
+
+  .seccion-subtitulo {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .seccion-body { padding: 14px 16px; }
+
+  /* ── TOGGLE BOTONES ──────────────────────── */
+  .toggle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .toggle-btn {
+    border-radius: 12px;
+    padding: 14px 10px;
+    border: 1.5px solid rgba(150,150,150,0.3);
+    background: rgba(60,60,60,0.3);
+    color: rgba(255,255,255,0.35);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.5px;
+  }
+  .toggle-btn .t-emoji { font-size: 1.5rem; }
+  .toggle-btn .t-label { font-size: 0.75rem; opacity: 0.7; }
+  .toggle-btn .t-estado { font-size: 0.8rem; }
+  .toggle-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── TOGGLE CERVECERO ────────────────────── */
+  .cervecero-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .cervecero-toggle {
+    flex: 1;
+    border-radius: 12px;
+    padding: 14px;
+    border: 1.5px solid rgba(150,150,150,0.3);
+    background: rgba(60,60,60,0.3);
+    color: rgba(255,255,255,0.35);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── POOL DE PRODUCTOS ───────────────────── */
+  .pool-titulo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    margin-top: 16px;
+  }
+  .pool-titulo:first-child { margin-top: 0; }
+
+  .pool-lista { display: flex; flex-direction: column; gap: 8px; }
+
+  .pool-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .pool-nombre {
+    flex: 1;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pool-precio-normal {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+
+  .pool-precio-oferta {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.05rem;
+  }
+
+  .badge-off {
+    font-size: 0.7rem;
+    font-weight: 900;
+    padding: 2px 7px;
+    border-radius: 6px;
+    color: white;
+  }
+
+  .pool-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.88rem;
+    padding: 16px 0;
+  }
+
+  /* ── CANDIDATOS AUTOMÁTICOS ──────────────── */
+  .cand-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .cand-info { flex: 1; min-width: 0; }
+  .cand-nombre {
+    font-weight: 700;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cand-meta {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .cand-precios { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .cand-precio-orig {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+  .cand-precio-desc {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.05rem;
+    color: var(--dest);
+  }
+  .btn-activar {
+    background: linear-gradient(135deg, #e65100, #ff6f00);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 0.9rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+  .btn-activar:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── FLYER SECTION ───────────────────────── */
+  .flyer-btns {
+    display: flex;
+    gap: 10px;
+  }
+  .flyer-btn {
+    flex: 1;
+    border-radius: 12px;
+    padding: 12px;
+    border: none;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: opacity 0.15s;
+  }
+  .flyer-btn:hover { opacity: 0.85; }
+
+  .flyer-preview {
+    margin-top: 14px;
+    border-radius: 12px;
+    overflow: hidden;
+    display: none;
+  }
+  .flyer-preview canvas { width: 100%; height: auto; display: block; }
+
+  .flyer-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  /* ── STATS CARD ──────────────────────────── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .stat-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.6rem;
+  }
+  .stat-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── LOADING ─────────────────────────────── */
+  .loading-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 0.3; transform: scale(0.8); }
+    50%      { opacity: 1;   transform: scale(1.1); }
+  }
+
+  /* ── DIVIDER ─────────────────────────────── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+  }
+
+  /* ── SCROLL REVEAL ───────────────────────── */
+  .seccion {
+    animation: fadeUp 0.35s ease both;
+  }
+  .seccion:nth-child(1) { animation-delay: 0.05s; }
+  .seccion:nth-child(2) { animation-delay: 0.12s; }
+  .seccion:nth-child(3) { animation-delay: 0.19s; }
+  .seccion:nth-child(4) { animation-delay: 0.26s; }
+  .seccion:nth-child(5) { animation-delay: 0.33s; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="index.html" class="header-back">← POS</a>
+  <div style="flex:1">
+    <div class="header-title">⚡ GESTIÓN DE OFERTAS</div>
+  </div>
+  <div style="display:flex;gap:5px;align-items:center">
+    <a href="reporte-ventas.html" style="background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);color:#00e5ff;border-radius:8px;padding:5px 9px;font-size:.7rem;font-family:inherit;font-weight:700;text-decoration:none;white-space:nowrap">📈</a>
+    <a href="reporte-bodega.html" style="background:rgba(68,255,136,.1);border:1px solid rgba(68,255,136,.25);color:#44ff88;border-radius:8px;padding:5px 9px;font-size:.7rem;font-family:inherit;font-weight:700;text-decoration:none;white-space:nowrap">🏭</a>
+    <div class="header-reloj" id="reloj">--:--</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ── STATS ─────────────────────────────── -->
+  <div class="seccion">
+    <div class="seccion-header">
+      <span class="seccion-emoji">📊</span>
+      <div>
+        <div class="seccion-titulo">Estado del día</div>
+        <div class="seccion-subtitulo" id="subtituloFecha">Cargando...</div>
+      </div>
+    </div>
+    <div class="seccion-body">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num" id="cntRel" style="color:var(--rel)"><span class="loading-dot"></span></div>
+          <div class="stat-label">Relámpago</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="cntDest" style="color:var(--dest)"><span class="loading-dot"></span></div>
+          <div class="stat-label">Destacadas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="cntEsp" style="color:var(--esp)"><span class="loading-dot"></span></div>
+          <div class="stat-label">Especiales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="cntUlt" style="color:var(--ult)"><span class="loading-dot"></span></div>
+          <div class="stat-label">Últ. Unid.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── INTERRUPTORES ─────────────────────── -->
+  <div class="seccion">
+    <div class="seccion-header">
+      <span class="seccion-emoji">🔦</span>
+      <div>
+        <div class="seccion-titulo">Interruptores</div>
+        <div class="seccion-subtitulo">Activar/desactivar por tipo de oferta</div>
+      </div>
+    </div>
+    <div class="seccion-body">
+      <div class="toggle-grid">
+        <button class="toggle-btn" id="toggleRelampago" onclick="toggleOferta('relampago')">
+          <span class="t-emoji">⚡</span>
+          <span>RELÁMPAGO</span>
+          <span class="t-estado">…</span>
+        </button>
+        <button class="toggle-btn" id="toggleDestacadas" onclick="toggleOferta('destacadas')">
+          <span class="t-emoji">🔥</span>
+          <span>DESTACADAS</span>
+          <span class="t-estado">…</span>
+        </button>
+        <button class="toggle-btn" id="toggleEspeciales" onclick="toggleOferta('especiales')">
+          <span class="t-emoji">⭐</span>
+          <span>ESPECIALES</span>
+          <span class="t-estado">…</span>
+        </button>
+        <button class="toggle-btn" id="toggleUltimas" onclick="toggleOferta('ultimas')">
+          <span class="t-emoji">🏷️</span>
+          <span>ÚLTIMAS UNID.</span>
+          <span class="t-estado">…</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── JUEVES CERVECERO ───────────────────── -->
+  <div class="seccion">
+    <div class="seccion-header">
+      <span class="seccion-emoji">🍺</span>
+      <div>
+        <div class="seccion-titulo" style="color:var(--cerv)">Jueves Cervecero</div>
+        <div class="seccion-subtitulo">Override manual + flyer para redes</div>
+      </div>
+    </div>
+    <div class="seccion-body">
+      <div class="cervecero-row">
+        <button class="cervecero-toggle" id="toggleCervecero" onclick="toggleCervecero()">
+          🍺 CERVECERO — cargando...
+        </button>
+        <button class="flyer-btn" style="background:var(--cerv);color:#0d47a1;flex:0 0 auto;padding:12px 16px;"
+                onclick="abrirFlyer()">
+          🖼️ Flyer
+        </button>
+      </div>
+
+      <!-- Preview del flyer -->
+      <div class="flyer-preview" id="flyerPreview">
+        <div id="flyerCanvasWrap"></div>
+        <div class="flyer-actions">
+          <button class="flyer-btn" style="background:#25D366;color:white" onclick="compartirFlyerWA()">📲 Compartir WA</button>
+          <button class="flyer-btn" style="background:rgba(255,255,255,0.1);color:white" onclick="descargarFlyer()">💾 Guardar</button>
+          <button class="flyer-btn" style="background:rgba(255,255,255,0.08);color:var(--muted)" onclick="cerrarFlyer()">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── POOL ACTIVO HOY ────────────────────── -->
+  <div class="seccion">
+    <div class="seccion-header">
+      <span class="seccion-emoji">📋</span>
+      <div>
+        <div class="seccion-titulo">Productos en oferta hoy</div>
+        <div class="seccion-subtitulo">Pool activo cargado desde la planilla</div>
+      </div>
+    </div>
+    <div class="seccion-body" id="poolBody">
+      <div class="pool-empty"><span class="loading-dot"></span> Cargando pools...</div>
+    </div>
+  </div>
+
+  <!-- ── CANDIDATOS VENCIMIENTO ─────────────── -->
+  <div class="seccion">
+    <div class="seccion-header">
+      <span class="seccion-emoji">⏰</span>
+      <div>
+        <div class="seccion-titulo">Próximos a vencer</div>
+        <div class="seccion-subtitulo">Sin oferta activa — candidatos para activar</div>
+      </div>
+    </div>
+    <div class="seccion-body" id="candidatosBody">
+      <div class="pool-empty"><span class="loading-dot"></span> Analizando...</div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ────────────────────────────────────────────────
+//  CONSTANTES
+// ────────────────────────────────────────────────
+const API_URL = 'https://script.google.com/macros/s/AKfycbxhKFk2WAi-KRY5xGBsI6_6Pvp3jDjt8mSRXvy7I1WehNmBpJamqK9G9Q1ZJSCSgAdfDA/exec';
+
+const OFERTAS_RELAMPAGO_SISTEMA = {
+  '1':  { nombre:'2x1',   tipo:'nxm', cantidad:2, pagas:1    },
+  '2':  { nombre:'3x2',   tipo:'nxm', cantidad:3, pagas:2    },
+  '3':  { nombre:'4x3',   tipo:'nxm', cantidad:4, pagas:3    },
+  '4':  { nombre:'5x4',   tipo:'nxm', cantidad:5, pagas:4    },
+  '5':  { nombre:'6x5',   tipo:'nxm', cantidad:6, pagas:5    },
+  '6':  { nombre:'7x6',   tipo:'nxm', cantidad:7, pagas:6    },
+  '10': { nombre:'2da50', tipo:'nxm', cantidad:2, pagas:1.5  },
+  '11': { nombre:'10off', tipo:'pct', descuento:10            },
+  '12': { nombre:'15off', tipo:'pct', descuento:15            },
+  '13': { nombre:'20off', tipo:'pct', descuento:20            },
+  '14': { nombre:'25off', tipo:'pct', descuento:25            },
+};
+
+const _TOGGLE_CONFIG = {
+  relampago:  { id:'toggleRelampago',  emoji:'⚡', label:'RELÁMPAGO',    clave:'Dias ofertas relampago',  colorActivo:'rgba(249,168,37,0.25)',  bordeActivo:'#f9a825', textActivo:'white' },
+  destacadas: { id:'toggleDestacadas', emoji:'🔥', label:'DESTACADAS',   clave:'Dias ofertas destacadas', colorActivo:'rgba(255,111,0,0.25)',   bordeActivo:'#ff6f00', textActivo:'white' },
+  especiales: { id:'toggleEspeciales', emoji:'⭐', label:'ESPECIALES',   clave:'Dias ofertas especiales', colorActivo:'rgba(0,188,212,0.25)',    bordeActivo:'#00bcd4', textActivo:'white' },
+  ultimas:    { id:'toggleUltimas',    emoji:'🏷️', label:'ÚLTIMAS UNID.',clave:'Dias ofertas UNIDADES',   colorActivo:'rgba(229,57,53,0.25)',   bordeActivo:'#e53935', textActivo:'white' },
+};
+
+const _toggleEstado = { relampago:null, destacadas:null, especiales:null, ultimas:null };
+
+let productos = [];
+let _poolIdsRelampago  = new Set();
+let _poolIdsDestacadas = new Set();
+let _poolIdsEspeciales = new Set();
+let _poolIdsUltimas    = new Set();
+let _poolDataRelampago  = [];
+let _poolDataDestacadas = [];
+let _poolDataEspeciales = [];
+let _poolDataUltimas    = [];
+
+let _flyerCanvas = null;
+let _flyerProductos = [];
+let _flyerHoraCierre = 22;
+
+let _cerveceroOverride = localStorage.getItem('cervecero_override');
+if (_cerveceroOverride === 'true')  _cerveceroOverride = true;
+else if (_cerveceroOverride === 'false') _cerveceroOverride = false;
+else _cerveceroOverride = null;
+
+// ────────────────────────────────────────────────
+//  UTILIDADES
+// ────────────────────────────────────────────────
+function fechaArgentina() {
+  const now = new Date();
+  const arg = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+  return arg.getFullYear() + '-' +
+    String(arg.getMonth()+1).padStart(2,'0') + '-' +
+    String(arg.getDate()).padStart(2,'0');
+}
+
+function _parseFechaVenc_(fechaStr) {
+  if (!fechaStr) return null;
+  try {
+    const [y,m,d] = String(fechaStr).split('-').map(Number);
+    return new Date(y, m-1, d);
+  } catch(e) { return null; }
+}
+
+function _diaActualIdx() {
+  const js = new Date().getDay();
+  return [1,2,3,4,5,6,0].indexOf(js);
+}
+
+function _esCerveceroAutoActivo() {
+  const now = new Date();
+  const arg = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+  return arg.getDay() === 4 && arg.getHours() >= 18;
+}
+
+// ────────────────────────────────────────────────
+//  TOAST
+// ────────────────────────────────────────────────
+let _toastTimer = null;
+function toast(msg, tipo = 'verde') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + tipo;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.className = ''; }, 2800);
+}
+
+// ────────────────────────────────────────────────
+//  RELOJ
+// ────────────────────────────────────────────────
+function actualizarReloj() {
+  const now = new Date();
+  const arg = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+  document.getElementById('reloj').textContent =
+    String(arg.getHours()).padStart(2,'0') + ':' +
+    String(arg.getMinutes()).padStart(2,'0');
+}
+actualizarReloj();
+setInterval(actualizarReloj, 15000);
+
+// Fecha en subtítulo
+(function() {
+  const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const now = new Date();
+  const arg = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+  const str = dias[arg.getDay()].charAt(0).toUpperCase() + dias[arg.getDay()].slice(1) +
+    ' ' + arg.getDate() + '/' + (arg.getMonth()+1) + '/' + arg.getFullYear();
+  document.getElementById('subtituloFecha').textContent = str;
+})();
+
+// ────────────────────────────────────────────────
+//  CARGA DE PRODUCTOS
+// ────────────────────────────────────────────────
+async function cargarProductos() {
+  try {
+    const r = await fetch(API_URL + '?cache=' + Date.now(), { redirect:'follow', signal: AbortSignal.timeout(12000) });
+    const data = await r.json();
+    productos = (data.productos || []).map(p => ({
+      id:         p[3],
+      name:       p[0],
+      price:      parseFloat(p[1]) || 0,
+      categoria:  p[2] || '',
+      relampago:  parseInt(p[6]) || 0,
+      destacada:  parseFloat(p[7]) || 0,
+      especial:   parseFloat(p[8]) || 0,
+      stock:      parseFloat(p[5]) || 0,
+      rotacion:   parseFloat(p[14]) || 3,
+      stockMin:   parseFloat(p[13]) || 1,
+      vencimiento: p[15] || '',
+    }));
+  } catch(e) {
+    toast('❌ Error cargando productos', 'rojo');
+  }
+}
+
+// ────────────────────────────────────────────────
+//  POOLS DE OFERTAS
+// ────────────────────────────────────────────────
+async function cargarPools() {
+  try {
+    const r = await fetch(API_URL + '?action=getOfertas&t=' + Date.now(), { redirect:'follow', signal: AbortSignal.timeout(10000) });
+    const data = await r.json();
+    _poolDataRelampago  = data.relampagoActivo   || [];
+    _poolDataDestacadas = data.destacadasActivas  || [];
+    _poolDataEspeciales = data.especialesActivas  || [];
+    _poolDataUltimas    = data.ultimasUnidades    || [];
+    _poolIdsRelampago.clear();  _poolDataRelampago.forEach(p  => _poolIdsRelampago.add(p.id));
+    _poolIdsDestacadas.clear(); _poolDataDestacadas.forEach(p => _poolIdsDestacadas.add(p.id));
+    _poolIdsEspeciales.clear(); _poolDataEspeciales.forEach(p => _poolIdsEspeciales.add(p.id));
+    _poolIdsUltimas.clear();    _poolDataUltimas.forEach(p    => _poolIdsUltimas.add(p.id));
+
+    // Stats
+    document.getElementById('cntRel').textContent  = _poolDataRelampago.length;
+    document.getElementById('cntDest').textContent = _poolDataDestacadas.length;
+    document.getElementById('cntEsp').textContent  = _poolDataEspeciales.length;
+    document.getElementById('cntUlt').textContent  = _poolDataUltimas.length;
+
+    renderPools();
+  } catch(e) {
+    document.getElementById('cntRel').textContent  = '?';
+    document.getElementById('cntDest').textContent = '?';
+    document.getElementById('cntEsp').textContent  = '?';
+    document.getElementById('cntUlt').textContent  = '?';
+    document.getElementById('poolBody').innerHTML = '<div class="pool-empty">❌ Error cargando pools</div>';
+  }
+}
+
+function precioConOferta(p) {
+  const cfg = OFERTAS_RELAMPAGO_SISTEMA[String(p.relampago)];
+  if (!cfg) return p.price;
+  if (cfg.tipo === 'pct') return Math.round(p.price * (1 - cfg.descuento / 100));
+  if (cfg.tipo === 'nxm') return Math.round(p.price * cfg.pagas / cfg.cantidad);
+  return p.price;
+}
+
+function renderPools() {
+  const body = document.getElementById('poolBody');
+  let html = '';
+
+  const secciones = [
+    { label:'⚡ Relámpago', data: _poolDataRelampago,  color:'var(--rel)',  tipo:'rel' },
+    { label:'🔥 Destacadas', data: _poolDataDestacadas, color:'var(--dest)', tipo:'dest'},
+    { label:'⭐ Especiales', data: _poolDataEspeciales, color:'var(--esp)',  tipo:'esp' },
+    { label:'🏷️ Últimas unidades', data: _poolDataUltimas, color:'var(--ult)', tipo:'ult' },
+  ];
+
+  let totalItems = 0;
+  secciones.forEach(s => {
+    if (!s.data.length) return;
+    totalItems += s.data.length;
+    html += `<div class="pool-titulo" style="color:${s.color}">${s.label} (${s.data.length})</div>`;
+    html += '<div class="pool-lista">';
+    s.data.forEach(p => {
+      const prod = productos.find(x => x.id === p.id);
+      const precioOriginal = prod ? prod.price : (p.price || 0);
+      const cfg = prod ? OFERTAS_RELAMPAGO_SISTEMA[String(prod.relampago)] : null;
+      let badgeHtml = '';
+      let precioOfertaHtml = `<span class="pool-precio-oferta" style="color:${s.color}">$${precioOriginal.toLocaleString('es-AR')}</span>`;
+
+      if (cfg) {
+        if (cfg.tipo === 'pct') {
+          const po = Math.round(precioOriginal * (1 - cfg.descuento/100));
+          badgeHtml = `<span class="badge-off" style="background:${s.color === 'var(--rel)' ? '#f9a825' : s.color.replace('var(--','').replace(')','')}">${cfg.descuento}% OFF</span>`;
+          precioOfertaHtml = `<span class="pool-precio-normal">$${precioOriginal.toLocaleString('es-AR')}</span>
+            <span class="pool-precio-oferta" style="color:${s.color}">$${po.toLocaleString('es-AR')}</span>`;
+        } else if (cfg.tipo === 'nxm') {
+          badgeHtml = `<span class="badge-off" style="background:#555">${cfg.nombre.toUpperCase()}</span>`;
+        }
+      }
+
+      const stockBadge = (prod && prod.stock <= 5)
+        ? `<span style="font-size:0.7rem;color:var(--ult);margin-left:4px;">⚠️ ${prod ? prod.stock : '?'} u.</span>`
+        : '';
+
+      html += `<div class="pool-item">
+        <div style="flex:1;min-width:0">
+          <div class="pool-nombre">${p.nombre || p.name || 'Producto'} ${stockBadge}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+            ${precioOfertaHtml}
+            ${badgeHtml}
+          </div>
+        </div>
+        <button onclick="quitarOferta(${p.id})" style="background:rgba(255,255,255,0.07);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:0.8rem;">✕</button>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  if (!totalItems) {
+    html = '<div class="pool-empty">Sin ofertas activas hoy</div>';
+  }
+
+  body.innerHTML = html;
+}
+
+async function quitarOferta(id) {
+  const prod = productos.find(p => p.id === id);
+  if (!prod) return;
+  if (!confirm(`¿Quitar oferta de "${prod.name}"?`)) return;
+  try {
+    const url = API_URL + '?action=relampago&data=' + encodeURIComponent(JSON.stringify({ productoId: id, tipo: 0, limpiarOfertas: true }));
+    const r = await fetch(url, { redirect:'follow', signal: AbortSignal.timeout(12000) });
+    const res = await r.json();
+    if (res.success) {
+      toast('✅ Oferta quitada', 'verde');
+      await cargarPools();
+    } else {
+      toast('❌ ' + (res.mensaje || 'Error'), 'rojo');
+    }
+  } catch(e) {
+    toast('❌ Error de conexión', 'rojo');
+  }
+}
+
+// ────────────────────────────────────────────────
+//  CANDIDATOS POR VENCIMIENTO
+// ────────────────────────────────────────────────
+function renderCandidatos() {
+  const body = document.getElementById('candidatosBody');
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+
+  const candidatos = productos.filter(p => {
+    if (!p.vencimiento || p.stock <= 0) return false;
+    if (p.relampago > 0 || p.destacada > 0 || p.especial > 0) return false;
+    const dias = Math.round((_parseFechaVenc_(p.vencimiento) - hoy) / 86400000);
+    return dias >= 0 && dias <= 7;
+  }).map(p => {
+    const dias = Math.round((_parseFechaVenc_(p.vencimiento) - hoy) / 86400000);
+    const tipo = dias <= 3 ? 14 : dias <= 5 ? 13 : 12;
+    const pct  = dias <= 3 ? 25 : dias <= 5 ? 20 : 15;
+    return { p, dias, tipo, pct };
+  }).sort((a,b) => a.dias - b.dias);
+
+  if (!candidatos.length) {
+    body.innerHTML = '<div class="pool-empty">✅ Sin productos próximos a vencer sin oferta</div>';
+    return;
+  }
+
+  let html = '';
+  candidatos.forEach(({ p, dias, tipo, pct }) => {
+    const po = Math.round(p.price * (1 - pct/100));
+    const diasLabel = dias === 0
+      ? '<span style="color:var(--ult);font-weight:900;">Vence HOY</span>'
+      : `<span style="color:#e65100;">Vence en ${dias} día${dias>1?'s':''}</span>`;
+    html += `<div class="cand-item" id="cand_${p.id}">
+      <div class="cand-info">
+        <div class="cand-nombre">${p.name}</div>
+        <div class="cand-meta">${diasLabel} · Stock: ${p.stock} · Rot: ${p.rotacion||'?'}</div>
+        <div class="cand-precios">
+          <span class="cand-precio-orig">$${p.price.toLocaleString('es-AR')}</span>
+          <span class="cand-precio-desc">$${po.toLocaleString('es-AR')}</span>
+          <span class="badge-off" style="background:var(--dest)">−${pct}%</span>
+        </div>
+      </div>
+      <button class="btn-activar" id="btn_cand_${p.id}" onclick="activarCandidato(${p.id},${tipo})">
+        ⚡ Activar
+      </button>
+    </div>`;
+  });
+
+  body.innerHTML = html;
+}
+
+async function activarCandidato(id, tipo) {
+  const btn = document.getElementById('btn_cand_' + id);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  try {
+    const url = API_URL + '?action=relampago&data=' + encodeURIComponent(JSON.stringify({ productoId: id, tipo, limpiarOfertas: true }));
+    const r = await fetch(url, { redirect:'follow', signal: AbortSignal.timeout(15000) });
+    const res = await r.json();
+    if (res.success) {
+      const p = productos.find(x => x.id === id);
+      if (p) p.relampago = tipo;
+      if (btn) { btn.textContent = '✅'; btn.style.background = '#388e3c'; }
+      const fila = document.getElementById('cand_' + id);
+      if (fila) fila.style.opacity = '0.4';
+      toast('⚡ Oferta activada', 'naranja');
+      setTimeout(() => cargarPools(), 1200);
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = '⚡ Activar'; }
+      toast('❌ ' + (res.mensaje || 'Error'), 'rojo');
+    }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = '⚡ Activar'; }
+    toast('❌ Error de conexión', 'rojo');
+  }
+}
+
+// ────────────────────────────────────────────────
+//  TOGGLES
+// ────────────────────────────────────────────────
+function _pintarToggle(tipo, activo) {
+  const cfg = _TOGGLE_CONFIG[tipo];
+  const btn = document.getElementById(cfg.id);
+  if (!btn) return;
+  const estadoEl = btn.querySelector('.t-estado');
+  if (activo === null) {
+    btn.style.background  = 'rgba(100,100,100,0.2)';
+    btn.style.borderColor = 'rgba(150,150,150,0.4)';
+    btn.style.color       = 'rgba(255,255,255,0.3)';
+    if (estadoEl) estadoEl.textContent = '…';
+    return;
+  }
+  btn.style.background  = activo ? cfg.colorActivo       : 'rgba(60,60,60,0.3)';
+  btn.style.borderColor = activo ? cfg.bordeActivo       : 'rgba(150,150,150,0.3)';
+  btn.style.color       = activo ? cfg.textActivo        : 'rgba(255,255,255,0.35)';
+  btn.style.opacity     = activo ? '1'                   : '0.7';
+  if (estadoEl) estadoEl.textContent = activo ? '✓ ACTIVO' : '✗ INACTIVO';
+}
+
+async function cargarEstadoToggles() {
+  try {
+    const r = await fetch(API_URL + '?action=getConfig&t=' + Date.now(), { redirect:'follow', signal: AbortSignal.timeout(8000) });
+    const data = await r.json();
+    if (!data.success) return;
+    const cfg = data.config;
+    const diaIdx = _diaActualIdx();
+    Object.keys(_TOGGLE_CONFIG).forEach(tipo => {
+      const clave = _TOGGLE_CONFIG[tipo].clave;
+      const row = cfg[tipo + '|' + clave] || cfg[clave];
+      const activo = row ? (row[diaIdx] === 1 || row[diaIdx] === '1' || row[diaIdx] === true) : false;
+      _toggleEstado[tipo] = activo;
+      _pintarToggle(tipo, activo);
+    });
+  } catch(e) {
+    console.warn('Toggle load error:', e.message);
+  }
+}
+
+async function toggleOferta(tipo) {
+  const cfg = _TOGGLE_CONFIG[tipo];
+  const btn = document.getElementById(cfg.id);
+  const nuevoValor = _toggleEstado[tipo] ? 0 : 1;
+  const diaIdx = _diaActualIdx();
+
+  _toggleEstado[tipo] = nuevoValor === 1;
+  _pintarToggle(tipo, _toggleEstado[tipo]);
+  if (btn) { btn.disabled = true; }
+
+  try {
+    const datos = { seccion: tipo, clave: cfg.clave, dia: diaIdx, valor: nuevoValor };
+    const url = API_URL + '?action=setConfig&data=' + encodeURIComponent(JSON.stringify(datos));
+    const r = await fetch(url, { redirect:'follow', signal: AbortSignal.timeout(10000) });
+    const resp = await r.json();
+    if (resp.success) {
+      toast((nuevoValor ? '🟢 ' : '🔴 ') + cfg.emoji + ' ' + cfg.label + (nuevoValor ? ' activada' : ' desactivada'), nuevoValor ? 'verde' : 'rojo');
+      const logDatos = { tipo, estado: nuevoValor, vendedor: 'OFERTAS' };
+      fetch(API_URL + '?action=logInterruptor&data=' + encodeURIComponent(JSON.stringify(logDatos)), { redirect:'follow' }).catch(()=>{});
+    } else {
+      _toggleEstado[tipo] = !_toggleEstado[tipo];
+      _pintarToggle(tipo, _toggleEstado[tipo]);
+      toast('❌ Error: ' + resp.mensaje, 'rojo');
+    }
+  } catch(e) {
+    _toggleEstado[tipo] = !_toggleEstado[tipo];
+    _pintarToggle(tipo, _toggleEstado[tipo]);
+    toast('❌ Sin conexión', 'rojo');
+  }
+  if (btn) { btn.disabled = false; }
+}
+
+// ────────────────────────────────────────────────
+//  JUEVES CERVECERO
+// ────────────────────────────────────────────────
+function _pintarToggleCervecero() {
+  const btn = document.getElementById('toggleCervecero');
+  if (!btn) return;
+  const autoActivo = _esCerveceroAutoActivo();
+  const activo = _cerveceroOverride !== null ? _cerveceroOverride : autoActivo;
+  const esOverride = _cerveceroOverride !== null;
+  btn.style.background  = activo ? 'rgba(249,168,37,0.25)' : 'rgba(60,60,60,0.3)';
+  btn.style.borderColor = activo ? '#f9a825'               : 'rgba(150,150,150,0.3)';
+  btn.style.color       = activo ? 'white'                 : 'rgba(255,255,255,0.35)';
+  btn.textContent = `🍺 CERVECERO ${activo ? '✓ ACTIVO' : '✗ INACTIVO'}${esOverride ? ' (manual)' : ' (auto)'}`;
+}
+
+function toggleCervecero() {
+  const autoActivo = _esCerveceroAutoActivo();
+  const estadoActual = _cerveceroOverride !== null ? _cerveceroOverride : autoActivo;
+  if (_cerveceroOverride === null) {
+    _cerveceroOverride = !autoActivo;
+  } else {
+    _cerveceroOverride = null;
+  }
+  if (_cerveceroOverride === null) localStorage.removeItem('cervecero_override');
+  else localStorage.setItem('cervecero_override', String(_cerveceroOverride));
+  _pintarToggleCervecero();
+  const nuevoEstado = _cerveceroOverride !== null ? _cerveceroOverride : autoActivo;
+  const msg = _cerveceroOverride === null
+    ? '🍺 Cervecero volvió a modo automático'
+    : (nuevoEstado ? '🍺 Cervecero forzado ACTIVO' : '🍺 Cervecero forzado INACTIVO');
+  toast(msg, nuevoEstado ? 'verde' : 'rojo');
+}
+
+// ── FLYER ────────────────────────────────────────
+async function abrirFlyer() {
+  toast('⏳ Cargando cervezas...', 'verde');
+  try {
+    const r = await fetch(API_URL + '?action=getJuevesCervecero&t=' + Date.now(), { redirect:'follow', signal: AbortSignal.timeout(12000) });
+    const data = await r.json();
+    if (!data.success || !data.productos.length) {
+      toast('⚠️ Sin cervezas disponibles', 'rojo'); return;
+    }
+    _flyerProductos  = data.productos;
+    _flyerHoraCierre = data.horaCierre || 22;
+    _flyerProductos.sort((a,b) => b.descuento !== a.descuento ? b.descuento - a.descuento : (b.rotacion||0)-(a.rotacion||0));
+  } catch(e) {
+    toast('❌ Error cargando datos', 'rojo'); return;
+  }
+  const canvas = _generarCanvas(_flyerProductos, _flyerHoraCierre);
+  _flyerCanvas = canvas;
+  const wrap = document.getElementById('flyerCanvasWrap');
+  wrap.innerHTML = '';
+  wrap.appendChild(canvas);
+  const preview = document.getElementById('flyerPreview');
+  preview.style.display = 'block';
+  preview.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function cerrarFlyer() {
+  document.getElementById('flyerPreview').style.display = 'none';
+}
+
+function descargarFlyer() {
+  if (!_flyerCanvas) return;
+  const a = document.createElement('a');
+  a.download = 'jueves-cervecero-copihue.png';
+  a.href = _flyerCanvas.toDataURL('image/png');
+  a.click();
+}
+
+async function compartirFlyerWA() {
+  if (!_flyerCanvas) return;
+  _flyerCanvas.toBlob(async blob => {
+    const file = new File([blob], 'jueves-cervecero.png', { type:'image/png' });
+    if (navigator.share && navigator.canShare({ files:[file] })) {
+      await navigator.share({ files:[file], title:'🍺 Jueves Cervecero — Almacén Copihue' }).catch(()=>{});
+    } else {
+      descargarFlyer();
+      setTimeout(() => window.open('https://wa.me/?text=' + encodeURIComponent('🍺 ¡JUEVES CERVECERO en Almacén Copihue!\nOfertas en cervezas solo esta noche 🕙\n🛒 https://almacen-copihue.vercel.app'), '_blank'), 800);
+    }
+  }, 'image/png');
+}
+
+function _generarCanvas(prods, horaCierre) {
+  const W = 600, PADDING = 32, ROW_H = 95, HEADER_H = 160, FOOTER_H = 100;
+  const H = HEADER_H + prods.length * ROW_H + FOOTER_H + PADDING;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const bg = ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#0b0b0b'); bg.addColorStop(0.5,'#1a1208'); bg.addColorStop(1,'#000000');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = 'rgba(255,255,255,0.01)';
+  for(let i=0;i<H;i+=4) ctx.fillRect(0,i,W,1);
+
+  const glow = ctx.createLinearGradient(0,0,W,0);
+  glow.addColorStop(0,'rgba(249,168,37,0)'); glow.addColorStop(0.5,'rgba(249,168,37,0.8)'); glow.addColorStop(1,'rgba(249,168,37,0)');
+  ctx.strokeStyle = glow; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0,12); ctx.lineTo(W,12); ctx.stroke();
+
+  ctx.font = 'bold 48px sans-serif'; ctx.fillStyle = '#f9a825'; ctx.textAlign = 'center';
+  ctx.fillText('🍺 JUEVES CERVECERO', W/2, 70);
+  ctx.font = '18px sans-serif'; ctx.fillStyle = '#ffffff';
+  ctx.fillText('PROMOS ESPECIALES', W/2, 100);
+  ctx.font = 'bold 16px sans-serif'; ctx.fillStyle = '#f9a825';
+  ctx.fillText(`⏰ Hasta las ${horaCierre}:00hs`, W/2, 128);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PADDING,145); ctx.lineTo(W-PADDING,145); ctx.stroke();
+
+  prods.forEach((p,idx) => {
+    const y = HEADER_H + idx * ROW_H; const cy = y + 48;
+    ctx.fillStyle = idx%2===0 ? 'rgba(255,255,255,0.02)' : 'rgba(249,168,37,0.02)';
+    ctx.fillRect(0,y,W,ROW_H);
+    if(idx===0 && p.descuento>=20){
+      ctx.shadowColor='rgba(249,168,37,0.4)'; ctx.shadowBlur=20;
+      ctx.fillStyle='rgba(249,168,37,0.08)'; ctx.fillRect(0,y,W,ROW_H);
+      ctx.shadowColor='transparent'; ctx.shadowBlur=0;
+    }
+    let badgeW,badgeH,badgeX,badgeY,discFontSize,offFontSize,badgeColor;
+    if(p.descuento>=25){ badgeColor='#ff3b30';badgeW=110;badgeH=52;badgeX=W-PADDING-120;badgeY=cy-26;discFontSize='bold 38px sans-serif';offFontSize='bold 14px sans-serif'; }
+    else if(p.descuento>=20){ badgeColor='#ff3b30';badgeW=100;badgeH=48;badgeX=W-PADDING-110;badgeY=cy-24;discFontSize='bold 32px sans-serif';offFontSize='bold 13px sans-serif'; }
+    else { badgeColor='#d32f2f';badgeW=85;badgeH=40;badgeX=W-PADDING-95;badgeY=cy-20;discFontSize='bold 24px sans-serif';offFontSize='bold 11px sans-serif'; }
+    ctx.fillStyle=badgeColor; ctx.beginPath(); ctx.roundRect(badgeX,badgeY,badgeW,badgeH,10); ctx.fill();
+    if(p.descuento>=20){ ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(badgeX,badgeY,badgeW,badgeH,10);ctx.stroke(); }
+    ctx.fillStyle='#ffffff'; ctx.font=discFontSize; ctx.textAlign='center';
+    ctx.fillText(`${p.descuento}%`,badgeX+badgeW/2,cy+6);
+    ctx.font=offFontSize; ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.fillText('OFF',badgeX+badgeW/2,cy+22);
+    ctx.textAlign='left';
+    const nom = p.nombre.length>30?p.nombre.substring(0,30)+'…':p.nombre;
+    ctx.font='bold 22px sans-serif'; ctx.fillStyle='#ffffff'; ctx.fillText(nom,PADDING,cy-22);
+    ctx.font='16px sans-serif'; ctx.fillStyle='#9e9e9e';
+    const origStr=`$${p.precio.toLocaleString('es-AR')}`; ctx.fillText(origStr,PADDING,cy-4);
+    const origW=ctx.measureText(origStr).width;
+    ctx.strokeStyle='#9e9e9e'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(PADDING,cy-8); ctx.lineTo(PADDING+origW,cy-8); ctx.stroke();
+    ctx.font='bold 42px sans-serif'; ctx.fillStyle='#00e676'; ctx.textAlign='left';
+    ctx.fillText(`$${p.precioPromo.toLocaleString('es-AR')}`,PADDING,cy+30);
+    ctx.font='13px sans-serif'; ctx.fillStyle='rgba(0,230,118,0.8)';
+    ctx.fillText(`Ahorras $${(p.precio-p.precioPromo).toLocaleString('es-AR')}`,PADDING,cy+50);
+    if(idx<prods.length-1){ ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PADDING,y+ROW_H-4);ctx.lineTo(W-PADDING,y+ROW_H-4);ctx.stroke(); }
+    ctx.textAlign='left';
+  });
+
+  const fy = HEADER_H + prods.length * ROW_H;
+  ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PADDING,fy+10);ctx.lineTo(W-PADDING,fy+10);ctx.stroke();
+  ctx.font='bold 26px sans-serif';ctx.fillStyle='#f9a825';ctx.textAlign='center';ctx.fillText('🔥 SOLO POR HOY',W/2,fy+50);
+  ctx.font='14px sans-serif';ctx.fillStyle='#ffffff';ctx.fillText('Stock limitado • Hasta agotar',W/2,fy+72);
+  ctx.font='12px sans-serif';ctx.fillStyle='rgba(255,255,255,0.6)';ctx.fillText('🛒 almacen-copihue.vercel.app',W/2,fy+92);
+  ctx.textAlign='left';
+  return canvas;
+}
+
+// ────────────────────────────────────────────────
+//  INIT
+// ────────────────────────────────────────────────
+Object.keys(_TOGGLE_CONFIG).forEach(tipo => _pintarToggle(tipo, null));
+_pintarToggleCervecero();
+
+(async function init() {
+  await Promise.all([
+    cargarEstadoToggles(),
+    cargarProductos()
+  ]);
+  await cargarPools();
+  renderCandidatos();
+})();
+</script>
+</body>
+</html>
