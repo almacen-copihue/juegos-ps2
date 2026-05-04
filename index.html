@@ -7456,7 +7456,26 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('searchFloating').addEventListener('input', actualizarFiltro);
     document.getElementById('categoryFloating').addEventListener('change', actualizarFiltro);
 
-    // ── VOLVER ARRIBA ──
+    // ── INTERCEPTAR BOTÓN ATRÁS ──
+    history.pushState(null, '', location.href);
+    window.addEventListener('popstate', () => {
+        // Volver a pushear para que el botón atrás no salga
+        history.pushState(null, '', location.href);
+        // Si hay un modal abierto, cerrarlo primero
+        const modales = ['modalCarrito','modalBusqueda','modalPedidoDirecto'];
+        let modalAbierto = false;
+        modales.forEach(id => {
+            const m = document.getElementById(id);
+            if (m && m.style.display !== 'none') {
+                m.style.display = 'none';
+                modalAbierto = true;
+            }
+        });
+        if (modalAbierto) return;
+        // Si no había modal, preguntar si quiere salir
+        const salir = confirm("¿Querés salir de Almacén Copihue?");
+        if (salir) history.back();
+    });
     window.addEventListener("scroll", () => {
         btnTop.style.display = window.scrollY > 300 ? "block" : "none";
     });
