@@ -37,15 +37,49 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
 .game-card:active { transform: scale(0.97); }
 
 /* Imagen — proporción caja PS2/DVD: 135 × 190 */
+/* object-position: right = muestra el frente (mitad derecha de la carátula horizontal) */
 .game-cover {
     width: 100%;
     aspect-ratio: 135 / 190;
     object-fit: cover;
+    object-position: right center;
     display: block;
+    cursor: zoom-in;
 }
 
 .game-card.no-disponible .game-cover {
     filter: grayscale(80%) brightness(40%);
+}
+
+/* ── LIGHTBOX carátula completa ── */
+#lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+#lightbox.open { display: flex; }
+#lightbox img {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 0 40px #000;
+    object-fit: contain;
+}
+#lightbox-close {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    color: #fff;
+    font-size: 32px;
+    cursor: pointer;
+    line-height: 1;
+    background: none;
+    border: none;
 }
 
 .no-disponible-text {
@@ -7186,6 +7220,12 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
     
 </div>
 
+<!-- LIGHTBOX carátula completa -->
+<div id="lightbox">
+    <button id="lightbox-close">✕</button>
+    <img id="lightbox-img" src="" alt="Carátula completa">
+</div>
+
 <!-- MODAL PEDIDO DIRECTO -->
 <div id="modalPedidoDirecto" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:2100; align-items:center; justify-content:center;">
     <div style="background:#1d1d1d; max-width:340px; width:90%; border-radius:14px; padding:24px; box-shadow:0 0 30px #000; text-align:center;">
@@ -7265,6 +7305,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnTop = document.getElementById("btnTop");
     const WHATSAPP_NUM = "5492944907380";
     const PRECIO = 7000;
+
+    // ── LIGHTBOX carátula completa ──
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+
+    document.querySelectorAll('.game-cover').forEach(img => {
+        img.addEventListener('click', e => {
+            e.stopPropagation();
+            lightboxImg.src = img.src;
+            lightbox.classList.add('open');
+        });
+    });
+    document.getElementById('lightbox-close').addEventListener('click', () => {
+        lightbox.classList.remove('open');
+        lightboxImg.src = '';
+    });
+    lightbox.addEventListener('click', e => {
+        if (e.target === lightbox) {
+            lightbox.classList.remove('open');
+            lightboxImg.src = '';
+        }
+    });
 
     // ── PEDIDO DIRECTO ──
     let urlPedidoDirecto = "";
