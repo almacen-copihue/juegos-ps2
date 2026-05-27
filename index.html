@@ -6,6 +6,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Almacén Copihue – Juegos PS2</title>
 
+<!-- Vista previa WhatsApp / Facebook -->
+<meta property="og:title" content="Almacén Copihue – Juegos PS2">
+<meta property="og:description" content="¡PES 2026 y más de 300 juegos PS2 disponibles! Desde $7000. Pedí por WhatsApp.">
+<meta property="og:image" content="https://juegos-ps2.vercel.app/caratulas/PES_2026_base_pes2014_Europa_Actualizado.jpg">
+<meta property="og:url" content="https://juegos-ps2.vercel.app">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://juegos-ps2.vercel.app/caratulas/PES_2026_base_pes2014_Europa_Actualizado.jpg">
+
 <style>
 body { background:#111; color:#fff; margin:0; font-family:Arial; }
 header { background:#222; padding:20px; text-align:center; border-bottom:2px solid #a00; position:sticky; top:0; }
@@ -189,6 +198,21 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
     .game-title { font-size: 11px; }
     .btn-uno, .btn-dos { font-size: 10px; padding: 7px 2px; }
 }
+/* ── BADGE NUEVO ── */
+.badge-nuevo {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #27ae60;
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 20px;
+    z-index: 10;
+    letter-spacing: .4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
 </style>
 </head>
 
@@ -200,6 +224,19 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
 </header>
 <div class='games-grid' id='gamesGrid'>
 
+    <div class="game-card" data-name="PES 2026 BASE PES2014" data-category="DEPORTES">
+        <span class="badge-nuevo">✨ NUEVO</span>
+        <img class="game-cover" src="https://juegos-ps2.vercel.app/caratulas/PES_2026_base_pes2014_Europa_Actualizado.jpg" alt="PES 2026 BASE PES2014">
+        <div class="game-info">
+            <div class="game-title">PES 2026 BASE PES2014</div>
+            <div class="game-category">DEPORTES</div>
+            <div class="price-line">Precio: $7000</div>
+            <div class="buttons-row">
+                <button class="btn-uno btn-pedido-directo" data-wa="https://wa.me/5492944907380?text=Hola!%20Me%20interesa%20el%20juego%20PES%202026%20BASE%20PES2014%20por%20$7000.">Pedido directo</button>
+                <button class="btn-dos btn-carrito" data-game="PES 2026 BASE PES2014">🛒 Al carrito</button>
+            </div>
+        </div>
+    </div>
     <div class="game-card"
          data-name="100 juegos nintendo 100 juegos nintendo "
          data-category="VARIOS/COLECCIONES">
