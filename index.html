@@ -213,6 +213,20 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
     letter-spacing: .4px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.5);
 }
+/* ── BOTÓN COMPARTIR WHATSAPP ── */
+.btn-compartir {
+    width: 100%;
+    padding: 7px 4px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    background: #075E54;
+    color: #fff;
+    margin-top: 2px;
+}
 </style>
 </head>
 
@@ -7571,6 +7585,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('searchFloating').addEventListener('input', actualizarFiltro);
     document.getElementById('categoryFloating').addEventListener('change', actualizarFiltro);
+
+    // ── BOTÓN COMPARTIR WHATSAPP (todas las cards) ──
+    document.querySelectorAll('.game-card').forEach(card => {
+        const titulo = card.querySelector('.game-title')?.textContent.trim();
+        if (!titulo) return;
+        const url = 'https://juegos-ps2.vercel.app';
+        const msg = `🎮 *${titulo}* — $7.000\nDisponible en Almacén Copihue 👾\n${url}`;
+        const btn = document.createElement('button');
+        btn.className = 'btn-compartir';
+        btn.textContent = '📤 Compartir';
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+        });
+        const row = card.querySelector('.buttons-row');
+        if (row) row.after(btn);
+    });
 
     // ── INTERCEPTAR BOTÓN ATRÁS ──
     history.pushState(null, '', location.href);
