@@ -7315,10 +7315,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const PRECIO = 7000;
 
     // ── GAS ENDPOINT (reemplazá con tu URL al publicar el script) ──
-    const GAS_URL = "PEGAR_URL_GAS_AQUI";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycby1rbaVR6NLOLwBbMnxQYLugW6oRpZ1tDc7T51gyWqpHvJb2FDYnhpmlcEpPfXhfehVBQ/exec";
 
     function registrarPedido(juegos, tipo) {
-        if (!GAS_URL || GAS_URL === "PEGAR_URL_GAS_AQUI") return;
+        if (!GAS_URL || GAS_URL === "https://script.google.com/macros/s/AKfycby1rbaVR6NLOLwBbMnxQYLugW6oRpZ1tDc7T51gyWqpHvJb2FDYnhpmlcEpPfXhfehVBQ/exec") return;
         const lista = Array.isArray(juegos) ? juegos : [juegos];
         fetch(GAS_URL, {
             method: "POST",
@@ -7336,7 +7336,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── RANKING MÁS PEDIDOS ──
     function cargarRanking() {
-        if (!GAS_URL || GAS_URL === "PEGAR_URL_GAS_AQUI") return;
+        if (!GAS_URL || GAS_URL === "https://script.google.com/macros/s/AKfycby1rbaVR6NLOLwBbMnxQYLugW6oRpZ1tDc7T51gyWqpHvJb2FDYnhpmlcEpPfXhfehVBQ/exec") return;
         fetch(GAS_URL + "?action=ranking")
             .then(r => r.json())
             .then(data => {
