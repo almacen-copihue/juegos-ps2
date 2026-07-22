@@ -211,6 +211,18 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
     letter-spacing: .4px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.5);
 }
+/* ── HIGHLIGHT BÚSQUEDA ── */
+@keyframes highlightPulse {
+    0%   { outline: 4px solid #27ae60; box-shadow: 0 0 14px #27ae60; }
+    25%  { outline: 4px solid transparent; box-shadow: none; }
+    50%  { outline: 4px solid #27ae60; box-shadow: 0 0 14px #27ae60; }
+    75%  { outline: 4px solid transparent; box-shadow: none; }
+    100% { outline: 4px solid #27ae60; box-shadow: 0 0 14px #27ae60; }
+}
+.highlight-encontrado {
+    animation: highlightPulse 1.2s ease-in-out forwards;
+    animation-iteration-count: 1;
+}
 </style>
 </head>
 
@@ -7605,9 +7617,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const target = encontrados[i].card;
                 setTimeout(() => {
                     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    target.style.outline = '4px solid #27ae60';
-                    target.style.boxShadow = '0 0 12px #27ae60';
-                    setTimeout(() => { target.style.outline = 'none'; target.style.boxShadow = 'none'; }, 4000);
+                    target.classList.add('highlight-encontrado');
+                    setTimeout(() => {
+                        target.classList.remove('highlight-encontrado');
+                        target.style.outline = '4px solid #27ae60';
+                        target.style.boxShadow = '0 0 12px #27ae60';
+                        setTimeout(() => { target.style.outline = 'none'; target.style.boxShadow = 'none'; }, 3000);
+                    }, 1200);
                 }, 400);
             });
         });
