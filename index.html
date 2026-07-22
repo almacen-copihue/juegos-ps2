@@ -7654,6 +7654,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('categoryFloating').addEventListener('change', actualizarFiltro);
 
+    // ── AL CARGAR, IR AL INICIO ──
+    window.scrollTo(0, 0);
+
     // ── INTERCEPTAR BOTÓN ATRÁS ──
     history.pushState(null, '', location.href);
     window.addEventListener('popstate', () => {
