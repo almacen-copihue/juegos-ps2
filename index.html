@@ -7577,6 +7577,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('limpiarBusqueda').style.display = val ? 'block' : 'none';
         actualizarFiltro();
     });
+
+    function actualizarFiltro() {
         const text = (document.getElementById('searchFloating').value || "").trim().toLowerCase()
                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const words = text.split(/\s+/);
