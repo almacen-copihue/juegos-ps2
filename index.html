@@ -7317,15 +7317,16 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
 </div>
 
 <!-- MODAL BÚSQUEDA FLOTANTE -->
-<div id="modalBusqueda" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:1500; align-items:flex-start; justify-content:center; padding-top:50px;">
-    <div style="background:#222; border-radius:14px; padding:16px; width:94%; max-width:420px; box-shadow:0 0 20px #000; max-height:80vh; display:flex; flex-direction:column;">
-        <!-- Buscador -->
+<div id="modalBusqueda" style="display:none; position:fixed; top:0; left:0; right:0; background:#1e1e1e; z-index:1500; box-shadow:0 4px 20px rgba(0,0,0,0.8);">
+    <div style="padding:12px 12px 0;">
         <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
-            <input id="searchFloating" type="text" placeholder="🔍  Escribí el nombre del juego..." inputmode="search" autocomplete="off" autocapitalize="off"
-                style="flex:1; padding:12px; border-radius:8px; border:none; font-size:16px; background:#333; color:#fff;">
-            <button id="cerrarBusqueda" style="background:none; border:none; color:#fff; font-size:22px; cursor:pointer; flex-shrink:0;">✕</button>
+            <div style="position:relative; flex:1;">
+                <input id="searchFloating" type="text" placeholder="🔍  Escribí el nombre del juego..." inputmode="search" autocomplete="off" autocapitalize="off"
+                    style="width:100%; padding:12px 36px 12px 12px; border-radius:8px; border:none; font-size:16px; background:#333; color:#fff; box-sizing:border-box;">
+                <button id="limpiarBusqueda" style="display:none; position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:#aaa; font-size:18px; cursor:pointer; padding:0; line-height:1;">✕</button>
+            </div>
+            <button id="cerrarBusqueda" style="background:#333; border:none; color:#fff; font-size:18px; cursor:pointer; width:42px; height:42px; border-radius:8px; flex-shrink:0;">✕</button>
         </div>
-        <!-- Categoría -->
         <select id="categoryFloating" style="width:100%; padding:10px; border-radius:8px; border:none; background:#333; color:#fff; font-size:14px; margin-bottom:10px;">
             <option value="">Todas las Categorías</option>
             <option value="ACCIÓN-AVENTURA">ACCIÓN-AVENTURA</option>
@@ -7338,9 +7339,8 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
             <option value="RPG">RPG</option>
             <option value="VARIOS/COLECCIONES">VARIOS/COLECCIONES</option>
         </select>
-        <!-- Lista de resultados inline -->
-        <div id="resultadosBusqueda" style="overflow-y:auto; flex:1; border-radius:8px;"></div>
     </div>
+    <div id="resultadosBusqueda" style="overflow-y:auto; max-height:55vh; padding:0 12px 12px;"></div>
 </div>
 
 <!-- FABs FLOTANTES -->
@@ -7557,13 +7557,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('cerrarBusqueda').addEventListener('click', () => {
         document.getElementById('modalBusqueda').style.display = 'none';
-    });
-    document.getElementById('modalBusqueda').addEventListener('click', e => {
-        if (e.target === document.getElementById('modalBusqueda'))
-            document.getElementById('modalBusqueda').style.display = 'none';
+        document.getElementById('searchFloating').value = '';
+        document.getElementById('categoryFloating').value = '';
+        document.getElementById('limpiarBusqueda').style.display = 'none';
+        actualizarFiltro();
     });
 
-    function actualizarFiltro() {
+    // X dentro del input — limpia texto sin cerrar
+    document.getElementById('limpiarBusqueda').addEventListener('click', () => {
+        document.getElementById('searchFloating').value = '';
+        document.getElementById('limpiarBusqueda').style.display = 'none';
+        actualizarFiltro();
+        document.getElementById('searchFloating').focus();
+    });
+
+    // Mostrar/ocultar X del input según haya texto
+    document.getElementById('searchFloating').addEventListener('input', () => {
+        const val = document.getElementById('searchFloating').value;
+        document.getElementById('limpiarBusqueda').style.display = val ? 'block' : 'none';
+        actualizarFiltro();
+    });
         const text = (document.getElementById('searchFloating').value || "").trim().toLowerCase()
                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const words = text.split(/\s+/);
@@ -7637,8 +7650,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-        document.getElementById('searchFloating').addEventListener('input', actualizarFiltro);
-    document.getElementById('categoryFloating').addEventListener('change', actualizarFiltro);
+        document.getElementById('categoryFloating').addEventListener('change', actualizarFiltro);
 
     // ── INTERCEPTAR BOTÓN ATRÁS ──
     history.pushState(null, '', location.href);
