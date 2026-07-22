@@ -7605,8 +7605,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const target = encontrados[i].card;
                 setTimeout(() => {
                     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    target.style.outline = '3px solid #e33';
-                    setTimeout(() => { target.style.outline = 'none'; }, 2000);
+                    target.style.outline = '4px solid #27ae60';
+                    target.style.boxShadow = '0 0 12px #27ae60';
+                    setTimeout(() => { target.style.outline = 'none'; target.style.boxShadow = 'none'; }, 4000);
                 }, 400);
             });
         });
