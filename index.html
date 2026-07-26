@@ -170,7 +170,7 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
     position: fixed;
     bottom: 100px;
     left: 20px;
-    background: #1565c0;
+    background: #2e7d32;
     color: #fff;
     border: none;
     width: 44px;
@@ -184,7 +184,7 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
     outline: none;
     -webkit-tap-highlight-color: transparent;
 }
-#btnTop:active { background: #0d47a1; transform: scale(0.93); }
+#btnTop:active { background: #1b5e20; transform: scale(0.93); }
 
 /* ── PANTALLAS GRANDES: más columnas ── */
 @media (min-width: 520px) {
@@ -226,6 +226,76 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
     animation: highlightPulse 1.2s ease-in-out forwards;
     animation-iteration-count: 1;
 }
+/* ── TOGGLE DVD / OPL ── */
+#toggleFormato {
+    display: flex;
+    gap: 0;
+    background: #2a2a2a;
+    border-radius: 10px;
+    padding: 4px;
+    margin: 12px auto;
+    max-width: 260px;
+}
+.toggle-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    background: transparent;
+    color: #888;
+    transition: all .2s;
+}
+.toggle-btn.active {
+    background: #c0392b;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.toggle-btn.active.opl {
+    background: #1565c0;
+}
+
+/* ── GRILLA OPL ── */
+#gridOPL {
+    display: none;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 12px;
+    max-width: 680px;
+    margin: 0 auto;
+}
+#gridOPL.visible { display: grid; }
+
+/* Badge OPL */
+.badge-opl {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #1565c0;
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 20px;
+    z-index: 10;
+    letter-spacing: .4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+/* Info OPL precio */
+.price-opl {
+    font-size: 13px;
+    font-weight: bold;
+    color: #64b5f6;
+    margin-bottom: 4px;
+}
+.domicilio-tag {
+    font-size: 10px;
+    color: #888;
+    margin-bottom: 8px;
+}
 </style>
 </head>
 
@@ -233,8 +303,15 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
 
 <header>
     <div class="title">Almacén Copihue – Juegos PS2</div>
+    <div style="font-size:11px; color:#555; margin-top:2px;">v7 · juegos-ps2.vercel.app</div>
     <div style="font-size:13px; color:#aaa; margin-top:4px;">Usá 🔍 para buscar · 🛒 para tu pedido</div>
 </header>
+<!-- TOGGLE DVD / OPL -->
+<div id="toggleFormato">
+    <button class="toggle-btn active" id="btnDVD" onclick="cambiarFormato('DVD')">📀 DVD — $7.000</button>
+    <button class="toggle-btn opl" id="btnOPL" onclick="cambiarFormato('OPL')">🕹️ OPL — $15.000</button>
+</div>
+
 <!-- SECCIÓN MÁS PEDIDOS -->
 <div id="seccionRanking" style="display:none; padding:12px; max-width:680px; margin:0 auto;">
     <div style="background:#1a1a1a; border-radius:12px; padding:14px; border:1px solid #2a2a2a;">
@@ -242,6 +319,9 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
         <div id="listaRanking" style="display:flex; flex-direction:column; gap:8px;"></div>
     </div>
 </div>
+
+<!-- GRILLA OPL (se carga dinámicamente) -->
+<div id="gridOPL"></div>
 
 <div class='games-grid' id='gamesGrid'>
 
@@ -7290,7 +7370,8 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
         <div style="font-size:36px; margin-bottom:10px;">🎮</div>
         <div style="font-size:15px; color:#aaa; margin-bottom:6px;">Pedido directo por WhatsApp</div>
         <div id="pdJuego" style="font-size:18px; font-weight:bold; color:#f44; margin-bottom:6px;"></div>
-        <div style="font-size:22px; font-weight:bold; color:#ff8; margin-bottom:20px;">$7.000</div>
+        <div class="price-modal-val" style="font-size:22px; font-weight:bold; color:#ff8; margin-bottom:6px;">$7.000</div>
+        <div class="domicilio-info" style="display:none; font-size:12px; color:#64b5f6; margin-bottom:10px;">🚚 Entrega a domicilio incluida</div>
         <p style="color:#ccc; font-size:13px; margin-bottom:20px;">Se va a abrir WhatsApp con tu consulta lista para enviar.</p>
         <button id="pdConfirmar" style="width:100%; padding:14px; background:#25D366; color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; margin-bottom:10px;">
             ✅ Sí, abrir WhatsApp
@@ -7367,9 +7448,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── GAS ENDPOINT (reemplazá con tu URL al publicar el script) ──
     const GAS_URL = "https://script.google.com/macros/s/AKfycby1rbaVR6NLOLwBbMnxQYLugW6oRpZ1tDc7T51gyWqpHvJb2FDYnhpmlcEpPfXhfehVBQ/exec";
 
-    function registrarPedido(juegos, tipo) {
+    function registrarPedido(juegos, tipo, formato, totalOverride) {
         if (!GAS_URL || GAS_URL === "https://script.google.com/macros/s/AKfycby1rbaVR6NLOLwBbMnxQYLugW6oRpZ1tDc7T51gyWqpHvJb2FDYnhpmlcEpPfXhfehVBQ/exec") return;
         const lista = Array.isArray(juegos) ? juegos : [juegos];
+        const total = totalOverride || lista.length * PRECIO;
         fetch(GAS_URL, {
             method: "POST",
             mode: "no-cors",
@@ -7377,11 +7459,129 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify({
                 action: "registrar_pedido",
                 tipo: tipo,
+                formato: formato || "DVD",
                 juegos: lista,
                 cantidad: lista.length,
-                total: lista.length * PRECIO
+                total: total
             })
         }).catch(() => {}); // silencioso, no interrumpe el flujo
+    }
+
+    // ── FORMATO ACTIVO ──
+    let formatoActivo = 'DVD';
+    let juegosopl     = [];
+    let oplCargado    = false;
+
+    window.cambiarFormato = function(formato) {
+        formatoActivo = formato;
+        const gamesGrid = document.getElementById('gamesGrid');
+        const gridOPL   = document.getElementById('gridOPL');
+        const btnDVD    = document.getElementById('btnDVD');
+        const btnOPL    = document.getElementById('btnOPL');
+
+        if (formato === 'DVD') {
+            gamesGrid.style.display = 'grid';
+            gridOPL.classList.remove('visible');
+            btnDVD.classList.add('active');
+            btnOPL.classList.remove('active');
+        } else {
+            gamesGrid.style.display = 'none';
+            gridOPL.classList.add('visible');
+            btnDVD.classList.remove('active');
+            btnOPL.classList.add('active');
+            if (!oplCargado) cargarJuegosOPL();
+        }
+    };
+
+    function cargarJuegosOPL() {
+        const grid = document.getElementById('gridOPL');
+        grid.innerHTML = '<p style="color:#888; text-align:center; padding:30px; grid-column:1/-1;">Cargando juegos OPL...</p>';
+
+        fetch(GAS_URL + "?action=juegos_opl")
+            .then(r => r.json())
+            .then(data => {
+                if (!data.ok || !data.juegos.length) {
+                    grid.innerHTML = '<p style="color:#888; text-align:center; padding:30px; grid-column:1/-1;">No hay juegos OPL disponibles por el momento.</p>';
+                    return;
+                }
+                juegosopl  = data.juegos;
+                oplCargado = true;
+                grid.innerHTML = data.juegos.map(j => `
+                    <div class="game-card" data-name="${j.nombre}" data-category="${j.categoria}" style="position:relative;">
+                        <span class="badge-opl">🕹️ OPL</span>
+                        <img class="game-cover" src="https://juegos-ps2.vercel.app/caratulas/${slugify(j.nombre)}.jpg"
+                             onerror="this.src='https://juegos-ps2.vercel.app/caratulas/default.jpg'"
+                             alt="${j.nombre}">
+                        <div class="game-info">
+                            <div class="game-title">${j.nombre}</div>
+                            <div class="game-category">${j.categoria}</div>
+                            <div class="price-opl">$15.000</div>
+                            <div class="domicilio-tag">🚚 A domicilio · ${j.tamano_gb} GB</div>
+                            <div class="buttons-row" style="flex-direction:column;">
+                                <button class="btn-uno btn-pedido-opl" data-game="${j.nombre}"
+                                    style="background:#1565c0; color:#fff;">
+                                    Pedido directo
+                                </button>
+                                <button class="btn-dos btn-carrito-opl" data-game="${j.nombre}">
+                                    🛒 Al carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Pedido directo OPL
+                grid.querySelectorAll('.btn-pedido-opl').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const juego = btn.getAttribute('data-game');
+                        document.getElementById('pdJuego').textContent = juego;
+                        urlPedidoDirecto = `https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(
+                            `Hola! Me interesa el juego ${juego} en formato OPL/Pendrive por $15.000 a domicilio.`
+                        )}`;
+                        // Personalizar modal para OPL
+                        document.querySelector('#modalPedidoDirecto .price-modal-val').textContent = '$15.000';
+                        document.querySelector('#modalPedidoDirecto .domicilio-info').style.display = 'block';
+                        document.getElementById('modalPedidoDirecto').style.display = 'flex';
+                    });
+                });
+
+                // Carrito OPL
+                grid.querySelectorAll('.btn-carrito-opl').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const juego = btn.getAttribute('data-game') + ' [OPL]';
+                        const idx   = carrito.indexOf(juego);
+                        if (idx === -1) {
+                            carrito.push(juego);
+                            btn.classList.add('selected');
+                            btn.textContent = '✅ En carrito';
+                        } else {
+                            carrito.splice(idx, 1);
+                            btn.classList.remove('selected');
+                            btn.textContent = '🛒 Al carrito';
+                        }
+                        actualizarCarritoFAB();
+                    });
+                });
+
+                // Lightbox OPL
+                grid.querySelectorAll('.game-cover').forEach(img => {
+                    img.addEventListener('click', e => {
+                        e.stopPropagation();
+                        lightboxImg.src = img.src;
+                        lightbox.classList.add('open');
+                    });
+                });
+            })
+            .catch(() => {
+                grid.innerHTML = '<p style="color:#888; text-align:center; padding:30px; grid-column:1/-1;">Error al cargar juegos OPL. Revisá tu conexión.</p>';
+            });
+    }
+
+    function slugify(str) {
+        return str.toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "_")
+            .replace(/^_|_$/g, "");
     }
 
     // ── RANKING MÁS PEDIDOS ──
@@ -7437,6 +7637,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const juego = btn.closest('.game-card').querySelector('.game-title').textContent;
             document.getElementById('pdJuego').textContent = juego;
             urlPedidoDirecto = btn.getAttribute('data-wa');
+            // Reset a DVD
+            document.querySelector('#modalPedidoDirecto .price-modal-val').textContent = '$7.000';
+            document.querySelector('#modalPedidoDirecto .domicilio-info').style.display = 'none';
             modalPD.style.display = 'flex';
         });
     });
@@ -7544,11 +7747,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Confirmar pedido
     document.getElementById('btnConfirmarPedido').addEventListener('click', () => {
         if (carrito.length === 0) { alert("El carrito está vacío."); return; }
-        const total = carrito.length * PRECIO;
+
+        const itemsDVD = carrito.filter(j => !j.endsWith('[OPL]'));
+        const itemsOPL = carrito.filter(j => j.endsWith('[OPL]'));
+        const totalDVD = itemsDVD.length * 7000;
+        const totalOPL = itemsOPL.length * 15000;
+        const total    = totalDVD + totalOPL;
+
         let msg = "Hola! Quiero hacer el siguiente pedido de juegos PS2:\n\n";
-        carrito.forEach((j, i) => msg += `${i+1}. ${j}\n`);
-        msg += `\nTotal: $${total.toLocaleString('es-AR')} (${carrito.length} juego${carrito.length > 1 ? 's' : ''} x $${PRECIO.toLocaleString('es-AR')} c/u)`;
-        registrarPedido(carrito, 'carrito');
+        if (itemsDVD.length) {
+            msg += "📀 *DVD* ($7.000 c/u):\n";
+            itemsDVD.forEach((j, i) => msg += `${i+1}. ${j}\n`);
+        }
+        if (itemsOPL.length) {
+            msg += "\n🕹️ *OPL/Pendrive* ($15.000 c/u — a domicilio):\n";
+            itemsOPL.forEach((j, i) => msg += `${i+1}. ${j.replace(' [OPL]','')}\n`);
+        }
+        msg += `\n💰 Total: $${total.toLocaleString('es-AR')}`;
+
+        registrarPedido(carrito, 'carrito', itemsOPL.length > 0 ? 'MIXTO' : 'DVD', total);
         window.open("https://wa.me/" + WHATSAPP_NUM + "?text=" + encodeURIComponent(msg), "_blank");
     });
 
