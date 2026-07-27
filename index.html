@@ -267,6 +267,16 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
     margin: 0 auto;
 }
 #gridOPL.visible { display: grid; }
+#gridOPL .game-cover {
+    width: 100%;
+    aspect-ratio: 135 / 190;
+    object-fit: cover;
+    object-position: right center;
+    display: block;
+    cursor: zoom-in;
+}
+@media (min-width: 520px) { #gridOPL { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 700px) { #gridOPL { grid-template-columns: repeat(4, 1fr); } }
 
 /* Badge OPL */
 .badge-opl {
@@ -7506,11 +7516,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 juegosopl  = data.juegos;
                 oplCargado = true;
-                grid.innerHTML = data.juegos.map(j => `
+                grid.innerHTML = data.juegos.map(j => {
+                    const slug = j.nombre.toLowerCase()
+                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                        .replace(/[^a-z0-9]+/g, "_")
+                        .replace(/^_|_$/g, "");
+                    return `
                     <div class="game-card" data-name="${j.nombre}" data-category="${j.categoria}" style="position:relative;">
                         <span class="badge-opl">🕹️ OPL</span>
-                        <img class="game-cover" src="https://juegos-ps2.vercel.app/caratulas/${slugify(j.nombre)}.jpg"
-                             onerror="this.src='https://juegos-ps2.vercel.app/caratulas/default.jpg'"
+                        <img class="game-cover" src="caratulas/${slug}.jpg"
+                             onerror="this.style.background='#2a2a2a'; this.style.minHeight='120px';"
                              alt="${j.nombre}">
                         <div class="game-info">
                             <div class="game-title">${j.nombre}</div>
@@ -7527,8 +7542,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </button>
                             </div>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
 
                 // Pedido directo OPL
                 grid.querySelectorAll('.btn-pedido-opl').forEach(btn => {
