@@ -8084,6 +8084,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         lightbox.classList.add('open');
                     });
                 });
+            })
+            .catch(() => {
+                grid.innerHTML = '<p style="color:#888; text-align:center; padding:30px; grid-column:1/-1;">Error al cargar juegos OPL.</p>';
+            });
 
     // ── RANKING MÁS PEDIDOS ──
     function cargarRanking() {
