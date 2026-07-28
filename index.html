@@ -8003,6 +8003,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── RANKING MÁS PEDIDOS ──
     // ── RANKING MÁS PEDIDOS ──
         const grid = document.getElementById('gridOPL');
+
+        // ── MAPA DE CARÁTULAS: los juegos OPL son los mismos que los DVD,
+        // así que reusamos la misma imagen en vez de adivinar el nombre del archivo ──
+        const normalizarNombre = (t) => (t || '').trim().toUpperCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const mapaCaratulas = {};
+        document.querySelectorAll('#gamesGrid .game-card, #gridOPL .game-card').forEach(card => {
+            const tituloEl = card.querySelector('.game-title');
+            const imgEl = card.querySelector('img.game-cover');
+            if (!tituloEl || !imgEl) return;
+            const key = normalizarNombre(tituloEl.textContent);
+            const src = imgEl.getAttribute('src');
+            if (key && src) mapaCaratulas[key] = src;
+        });
+        function obtenerCaratula(nombre) {
+            const key = normalizarNombre(nombre);
+            if (mapaCaratulas[key]) return mapaCaratulas[key];
+            const slug = nombre.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]+/g, "_")
+                .replace(/^_|_$/g, "");
+            return `caratulas/${slug}.jpg`;
+        }
+
         grid.innerHTML = '<p style="color:#888; text-align:center; padding:30px; grid-column:1/-1;">Cargando juegos OPL...</p>';
 
         fetch(GAS_URL + "?action=juegos_opl")
@@ -8015,14 +8039,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 juegosopl  = data.juegos;
                 oplCargado = true;
                 grid.innerHTML = data.juegos.map(j => {
-                    const slug = j.nombre.toLowerCase()
-                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                        .replace(/[^a-z0-9]+/g, "_")
-                        .replace(/^_|_$/g, "");
                     return `
                     <div class="game-card" data-name="${j.nombre}" data-category="${j.categoria}" style="position:relative;">
                         <span class="badge-opl">🕹️ OPL</span>
-                        <img class="game-cover" src="caratulas/${slug}.jpg"
+                        <img class="game-cover" src="${obtenerCaratula(j.nombre)}"
                              onerror="this.style.background='#2a2a2a'; this.style.minHeight='120px';"
                              alt="${j.nombre}">
                         <div class="game-info">
