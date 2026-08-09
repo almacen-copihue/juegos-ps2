@@ -7987,7 +7987,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const GAS_URL = "https://script.google.com/macros/s/AKfycby1rbaVR6NLOLwBbMnxQYLugW6oRpZ1tDc7T51gyWqpHvJb2FDYnhpmlcEpPfXhfehVBQ/exec";
 
     function registrarPedido(juegos, tipo, formato, totalOverride) {
-        if (!GAS_URL || GAS_URL === "https://script.google.com/macros/s/AKfycby1rbaVR6NLOLwBbMnxQYLugW6oRpZ1tDc7T51gyWqpHvJb2FDYnhpmlcEpPfXhfehVBQ/exec") return;
+        if (!GAS_URL) return;
         const lista = Array.isArray(juegos) ? juegos : [juegos];
         const total = totalOverride || lista.length * PRECIO;
         fetch(GAS_URL, {
@@ -8177,7 +8177,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── RANKING MÁS PEDIDOS ──
     function cargarRanking() {
-        if (!GAS_URL || GAS_URL === "https://script.google.com/macros/s/AKfycby1rbaVR6NLOLwBbMnxQYLugW6oRpZ1tDc7T51gyWqpHvJb2FDYnhpmlcEpPfXhfehVBQ/exec") return;
+        if (!GAS_URL) return;
         fetch(GAS_URL + "?action=ranking")
             .then(r => r.json())
             .then(data => {
