@@ -7978,7 +7978,6 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    let cards = document.querySelectorAll('.game-card');
     const btnTop = document.getElementById("btnTop");
     const WHATSAPP_NUM = "5492944907380";
     const PRECIO = 7000;
@@ -8127,7 +8126,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>`;
                 }).join('');
-                cards = document.querySelectorAll('.game-card');
 
                 // Pedido directo OPL
                 grid.querySelectorAll('.btn-pedido-opl').forEach(btn => {
@@ -8390,6 +8388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function actualizarFiltro() {
+        const cards = document.querySelectorAll('.game-card');
         const text = (document.getElementById('searchFloating').value || "").trim().toLowerCase()
                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const words = text.split(/\s+/);
