@@ -313,7 +313,7 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
 
 <header>
     <div class="title">Almacén Copihue – Juegos PS2</div>
-    <div style="font-size:11px; color:#555; margin-top:2px;">v7 · juegos-ps2.vercel.app</div>
+    <div id="versionBadge" style="font-size:11px; color:#555; margin-top:2px;">v7 · juegos-ps2.vercel.app</div>
     <div style="font-size:13px; color:#aaa; margin-top:4px;">Usá 🔍 para buscar · 🛒 para tu pedido</div>
 </header>
 <!-- TOGGLE DVD / OPL -->
@@ -7978,6 +7978,11 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    // ── VERSIÓN (única fuente de verdad: bumpear solo acá) ──
+    const APP_VERSION = 8;
+    document.title = `Almacén Copihue – Juegos PS2 (v${APP_VERSION})`;
+    document.getElementById('versionBadge').textContent = `v${APP_VERSION} · juegos-ps2.vercel.app`;
+
     const btnTop = document.getElementById("btnTop");
     const WHATSAPP_NUM = "5492944907380";
     const PRECIO = 7000;
