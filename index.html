@@ -313,7 +313,7 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
 
 <header>
     <div class="title">Almacén Copihue – Juegos PS2</div>
-    <div style="font-size:11px; color:#555; margin-top:2px;">v9 · juegos-ps2.vercel.app</div>
+    <div style="font-size:11px; color:#555; margin-top:2px;">v10 · juegos-ps2.vercel.app</div>
     <div style="font-size:13px; color:#aaa; margin-top:4px;">Usá 🔍 para buscar · 🛒 para tu pedido</div>
 </header>
 <!-- TOGGLE DVD / OPL -->
@@ -7882,7 +7882,22 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
         </div>
         <div id="listaCarrito" style="min-height:60px; color:#ddd; font-size:14px;"></div>
         <div id="totalCarrito" style="margin-top:14px; font-size:16px; font-weight:bold; color:#fff; text-align:right;"></div>
-        <button id="btnConfirmarPedido" style="margin-top:16px; width:100%; padding:14px; background:#25D366; color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer;">
+
+        <!-- FORMULARIO CONTACTO CARRITO -->
+        <div style="margin-top:16px; border-top:1px solid #333; padding-top:14px;">
+            <div style="font-size:12px; color:#aaa; margin-bottom:10px; text-align:center;">Dejá tus datos para confirmar el pedido</div>
+            <input id="carritoNombre" type="text" placeholder="👤 Tu nombre *" autocomplete="name"
+                style="width:100%; padding:10px; border-radius:8px; border:none; background:#2e2e2e; color:#fff; font-size:14px; margin-bottom:8px; box-sizing:border-box;">
+            <input id="carritoTelefono" type="tel" placeholder="📱 Tu teléfono *" autocomplete="tel" inputmode="tel"
+                style="width:100%; padding:10px; border-radius:8px; border:none; background:#2e2e2e; color:#fff; font-size:14px; margin-bottom:8px; box-sizing:border-box;">
+            <input id="carritoEmail" type="email" placeholder="📧 Tu email (opcional)" autocomplete="email" inputmode="email"
+                style="width:100%; padding:10px; border-radius:8px; border:none; background:#2e2e2e; color:#fff; font-size:14px; margin-bottom:8px; box-sizing:border-box;">
+            <div id="carritoError" style="display:none; color:#f44; font-size:12px; text-align:center; margin-bottom:8px;">
+                ⚠️ Completá nombre y teléfono para continuar
+            </div>
+        </div>
+
+        <button id="btnConfirmarPedido" style="margin-top:8px; width:100%; padding:14px; background:#25D366; color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer;">
             ✅ Confirmar pedido por WhatsApp
         </button>
         <button id="btnVaciarCarrito" style="margin-top:8px; width:100%; padding:10px; background:#555; color:#fff; border:none; border-radius:10px; font-size:13px; cursor:pointer;">
@@ -7936,7 +7951,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const WHATSAPP_NUM = "5492944907380";
     const PRECIO = 7000;
     // ── VERSIÓN DEL INDEX — se actualiza con cada entrega ──
-    const INDEX_VERSION = "v9";
+    const INDEX_VERSION = "v10";
 
     // ── GAS ENDPOINT ──
     const GAS_URL = "https://script.google.com/macros/s/AKfycby1rbaVR6NLOLwBbMnxQYLugW6oRpZ1tDc7T51gyWqpHvJb2FDYnhpmlcEpPfXhfehVBQ/exec";
@@ -8313,13 +8328,43 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnConfirmarPedido').addEventListener('click', () => {
         if (carrito.length === 0) { alert("El carrito está vacío."); return; }
 
+        const nombre   = document.getElementById('carritoNombre').value.trim();
+        const telefono = document.getElementById('carritoTelefono').value.trim();
+        const email    = document.getElementById('carritoEmail').value.trim();
+
+        if (!nombre || !telefono) {
+            document.getElementById('carritoError').style.display = 'block';
+            return;
+        }
+        document.getElementById('carritoError').style.display = 'none';
+
         const itemsDVD = carrito.filter(j => !j.endsWith('[OPL]'));
         const itemsOPL = carrito.filter(j => j.endsWith('[OPL]'));
         const totalDVD = itemsDVD.length * 7000;
         const totalOPL = itemsOPL.length * 15000;
         const total    = totalDVD + totalOPL;
+        const formato  = itemsOPL.length > 0 ? 'MIXTO' : 'DVD';
 
-        let msg = "Hola! Quiero hacer el siguiente pedido de juegos PS2:\n\n";
+        if (GAS_URL) {
+            carrito.forEach(j => {
+                const esOPL   = j.endsWith('[OPL]');
+                const jNombre = j.replace(' [OPL]', '');
+                const card    = document.querySelector(`.game-card[data-name="${jNombre}"]`);
+                fetch(GAS_URL, {
+                    method: 'POST', mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'registrar_cliente',
+                        nombre, telefono, email,
+                        juego: jNombre,
+                        formato: esOPL ? 'OPL' : 'DVD',
+                        categoria: card ? card.getAttribute('data-category') : ''
+                    })
+                }).catch(() => {});
+            });
+        }
+
+        let msg = `Hola! Soy *${nombre}* (tel: ${telefono}).\nQuiero hacer el siguiente pedido de juegos PS2:\n\n`;
         if (itemsDVD.length) {
             msg += "📀 *DVD* ($7.000 c/u):\n";
             itemsDVD.forEach((j, i) => msg += `${i+1}. ${j}\n`);
@@ -8330,8 +8375,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         msg += `\n💰 Total: $${total.toLocaleString('es-AR')}`;
 
-        registrarPedido(carrito, 'carrito', itemsOPL.length > 0 ? 'MIXTO' : 'DVD', total);
+        registrarPedido(carrito, 'carrito', formato, total);
         window.open("https://wa.me/" + WHATSAPP_NUM + "?text=" + encodeURIComponent(msg), "_blank");
+
+        document.getElementById('carritoNombre').value = '';
+        document.getElementById('carritoTelefono').value = '';
+        document.getElementById('carritoEmail').value = '';
     });
 
     // ── BÚSQUEDA FLOTANTE ──
