@@ -313,7 +313,7 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
 
 <header>
     <div class="title">Almacén Copihue – Juegos PS2</div>
-    <div style="font-size:11px; color:#555; margin-top:2px;">v8 · juegos-ps2.vercel.app</div>
+    <div style="font-size:11px; color:#555; margin-top:2px;">v9 · juegos-ps2.vercel.app</div>
     <div style="font-size:13px; color:#aaa; margin-top:4px;">Usá 🔍 para buscar · 🛒 para tu pedido</div>
 </header>
 <!-- TOGGLE DVD / OPL -->
@@ -7838,18 +7838,36 @@ header { background:#222; padding:20px; text-align:center; border-bottom:2px sol
 </div>
 
 <!-- MODAL PEDIDO DIRECTO -->
-<div id="modalPedidoDirecto" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:2100; align-items:center; justify-content:center;">
-    <div style="background:#1d1d1d; max-width:340px; width:90%; border-radius:14px; padding:24px; box-shadow:0 0 30px #000; text-align:center;">
-        <div style="font-size:36px; margin-bottom:10px;">🎮</div>
-        <div style="font-size:15px; color:#aaa; margin-bottom:6px;">Pedido directo por WhatsApp</div>
-        <div id="pdJuego" style="font-size:18px; font-weight:bold; color:#f44; margin-bottom:6px;"></div>
-        <div class="price-modal-val" style="font-size:22px; font-weight:bold; color:#ff8; margin-bottom:6px;">$7.000</div>
-        <div class="domicilio-info" style="display:none; font-size:12px; color:#64b5f6; margin-bottom:10px;">🚚 Entrega a domicilio incluida</div>
-        <p style="color:#ccc; font-size:13px; margin-bottom:20px;">Se va a abrir WhatsApp con tu consulta lista para enviar.</p>
-        <button id="pdConfirmar" style="width:100%; padding:14px; background:#25D366; color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; margin-bottom:10px;">
+<div id="modalPedidoDirecto" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:2100; align-items:center; justify-content:center; overflow-y:auto;">
+    <div style="background:#1d1d1d; max-width:340px; width:90%; border-radius:14px; padding:24px; box-shadow:0 0 30px #000; margin:20px auto;">
+        <div style="font-size:36px; margin-bottom:6px; text-align:center;">🎮</div>
+        <div style="font-size:13px; color:#aaa; margin-bottom:4px; text-align:center;">Pedido directo por WhatsApp</div>
+        <div id="pdJuego" style="font-size:16px; font-weight:bold; color:#f44; margin-bottom:4px; text-align:center;"></div>
+        <div class="price-modal-val" style="font-size:20px; font-weight:bold; color:#ff8; margin-bottom:4px; text-align:center;">$7.000</div>
+        <div class="domicilio-info" style="display:none; font-size:11px; color:#64b5f6; margin-bottom:10px; text-align:center;">🚚 Entrega a domicilio incluida</div>
+
+        <!-- FORMULARIO CONTACTO -->
+        <div style="margin:12px 0 6px; border-top:1px solid #333; padding-top:12px;">
+            <div style="font-size:12px; color:#aaa; margin-bottom:10px; text-align:center;">Dejá tus datos para que te contactemos</div>
+
+            <input id="pdNombre" type="text" placeholder="👤 Tu nombre *" autocomplete="name"
+                style="width:100%; padding:10px; border-radius:8px; border:none; background:#2e2e2e; color:#fff; font-size:14px; margin-bottom:8px; box-sizing:border-box;">
+
+            <input id="pdTelefono" type="tel" placeholder="📱 Tu teléfono *" autocomplete="tel" inputmode="tel"
+                style="width:100%; padding:10px; border-radius:8px; border:none; background:#2e2e2e; color:#fff; font-size:14px; margin-bottom:8px; box-sizing:border-box;">
+
+            <input id="pdEmail" type="email" placeholder="📧 Tu email (opcional)" autocomplete="email" inputmode="email"
+                style="width:100%; padding:10px; border-radius:8px; border:none; background:#2e2e2e; color:#fff; font-size:14px; margin-bottom:12px; box-sizing:border-box;">
+
+            <div id="pdError" style="display:none; color:#f44; font-size:12px; text-align:center; margin-bottom:8px;">
+                ⚠️ Completá nombre y teléfono para continuar
+            </div>
+        </div>
+
+        <button id="pdConfirmar" style="width:100%; padding:13px; background:#25D366; color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:bold; cursor:pointer; margin-bottom:8px;">
             ✅ Sí, abrir WhatsApp
         </button>
-        <button id="pdCancelar" style="width:100%; padding:10px; background:#444; color:#fff; border:none; border-radius:10px; font-size:14px; cursor:pointer;">
+        <button id="pdCancelar" style="width:100%; padding:10px; background:#444; color:#fff; border:none; border-radius:10px; font-size:13px; cursor:pointer;">
             Cancelar
         </button>
     </div>
@@ -7918,7 +7936,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const WHATSAPP_NUM = "5492944907380";
     const PRECIO = 7000;
     // ── VERSIÓN DEL INDEX — se actualiza con cada entrega ──
-    const INDEX_VERSION = "v8";
+    const INDEX_VERSION = "v9";
 
     // ── GAS ENDPOINT ──
     const GAS_URL = "https://script.google.com/macros/s/AKfycby1rbaVR6NLOLwBbMnxQYLugW6oRpZ1tDc7T51gyWqpHvJb2FDYnhpmlcEpPfXhfehVBQ/exec";
@@ -8149,16 +8167,59 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('pdConfirmar').addEventListener('click', () => {
-        const juego = document.getElementById('pdJuego').textContent;
-        registrarPedido([juego], 'directo');
-        window.open(urlPedidoDirecto, '_blank');
+        const nombre   = document.getElementById('pdNombre').value.trim();
+        const telefono = document.getElementById('pdTelefono').value.trim();
+        const email    = document.getElementById('pdEmail').value.trim();
+        const juego    = document.getElementById('pdJuego').textContent;
+        const esOPL    = document.querySelector('#modalPedidoDirecto .domicilio-info').style.display !== 'none';
+        const formato  = esOPL ? 'OPL' : 'DVD';
+        const precio   = esOPL ? '$15.000' : '$7.000';
+
+        // Validación
+        if (!nombre || !telefono) {
+            document.getElementById('pdError').style.display = 'block';
+            return;
+        }
+        document.getElementById('pdError').style.display = 'none';
+
+        // Registrar cliente en Sheets
+        if (GAS_URL) {
+            fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'registrar_cliente',
+                    nombre, telefono, email,
+                    juego, formato,
+                    categoria: document.querySelector(`.game-card[data-name="${juego}"]`)?.getAttribute('data-category') || ''
+                })
+            }).catch(() => {});
+        }
+
+        // Registrar pedido
+        registrarPedido([juego], 'directo', formato);
+
+        // Armar mensaje WhatsApp con nombre
+        const msg = `Hola! Soy *${nombre}* (tel: ${telefono}).\nMe interesa el juego *${juego}* en formato ${formato} por ${precio}${esOPL ? ' a domicilio' : ''}.`;
+        window.open('https://wa.me/5492944907380?text=' + encodeURIComponent(msg), '_blank');
+
+        // Limpiar y cerrar
+        document.getElementById('pdNombre').value = '';
+        document.getElementById('pdTelefono').value = '';
+        document.getElementById('pdEmail').value = '';
         modalPD.style.display = 'none';
     });
-    document.getElementById('pdCancelar').addEventListener('click', () => {
+    function cerrarModalPD() {
+        document.getElementById('pdNombre').value = '';
+        document.getElementById('pdTelefono').value = '';
+        document.getElementById('pdEmail').value = '';
+        document.getElementById('pdError').style.display = 'none';
         modalPD.style.display = 'none';
-    });
+    }
+    document.getElementById('pdCancelar').addEventListener('click', cerrarModalPD);
     modalPD.addEventListener('click', e => {
-        if (e.target === modalPD) modalPD.style.display = 'none';
+        if (e.target === modalPD) cerrarModalPD();
     });
 
     // ── CARRITO ──
