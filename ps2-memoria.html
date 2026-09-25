@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🎮 Memoria PS2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overscroll-behavior: contain; background: #0a0a0a; }
+  body { min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    font-family:'Space Grotesk',system-ui,sans-serif; padding:16px 12px 40px; color:#f2f2f2; }
+
+  .header { text-align:center; margin-bottom:8px; position:relative; width:100%; max-width:420px; }
+  .header h1 { font-size:clamp(1.3rem,6vw,1.8rem); font-weight:800; color:#f44; }
+  .header .tagline { font-size:0.65rem; color:#555; letter-spacing:3px; text-transform:uppercase; margin-top:3px; }
+  .app-version { position:absolute; top:0; right:4px; font-size:0.58rem; color:#333; }
+  .btn-volver { position:absolute; top:0; left:0; background:none; border:none; color:#666;
+    font-size:0.8rem; cursor:pointer; font-family:inherit; }
+
+  .dificultad { display:flex; gap:8px; margin:10px 0 14px; width:100%; max-width:420px; }
+  .btn-dif { flex:1; padding:8px 0; border:1px solid #333; border-radius:8px;
+    background:#1a1a1a; color:#888; font-size:0.78rem; font-weight:700;
+    cursor:pointer; font-family:inherit; transition:all .15s; }
+  .btn-dif.activo { background:#c0392b; color:#fff; border-color:#c0392b; }
+
+  .stats { display:flex; gap:20px; margin-bottom:12px;
+    background:#141414; padding:8px 20px; border-radius:12px; border:1px solid #222; }
+  .stat { text-align:center; }
+  .stat .num { font-size:1.15rem; font-weight:700; color:#ffd54f; }
+  .stat .lbl { font-size:0.6rem; color:#555; text-transform:uppercase; letter-spacing:1px; }
+
+  /* Cupones acumulados */
+  #cuponesBadge { display:none; background:#c0392b; color:#fff; border-radius:20px;
+    padding:4px 12px; font-size:0.78rem; font-weight:700; margin-bottom:10px;
+    text-align:center; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+
+  .board { display:grid; gap:7px; width:100%; max-width:420px; }
+  .board.grid-4 { grid-template-columns:repeat(4,1fr); }
+  .board.grid-6 { grid-template-columns:repeat(6,1fr); }
+
+  .card { aspect-ratio:135/190; perspective:900px; cursor:pointer; touch-action:manipulation; }
+  .card-inner { position:relative; width:100%; height:100%;
+    transition:transform 0.4s cubic-bezier(.4,.2,.2,1); transform-style:preserve-3d; }
+  .card.flipped .card-inner, .card.matched .card-inner { transform:rotateY(180deg); }
+
+  .face { position:absolute; width:100%; height:100%; border-radius:6px;
+    backface-visibility:hidden; box-shadow:0 3px 8px rgba(0,0,0,.5); }
+  .face.back { background:linear-gradient(145deg,#1a1a2e,#16213e);
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid #2a2a4a; font-size:clamp(1rem,4vw,1.6rem);
+    color:#3a3a7a; font-weight:800; }
+  .face.back::after { content:"PS2"; }
+  .face.front { transform:rotateY(180deg); overflow:hidden; }
+  .face.front img { width:100%; height:100%; object-fit:cover; object-position:right center; display:block; }
+  .face.front .sin-foto { width:100%; height:100%; background:#1a1a1a;
+    display:flex; align-items:center; justify-content:center; font-size:1.8rem; }
+  .card.matched .face.front { outline:3px solid #27ae60; box-shadow:0 0 12px #27ae60; animation:pop .35s ease; }
+  @keyframes pop { 0%{transform:rotateY(180deg) scale(1)} 50%{transform:rotateY(180deg) scale(1.06)} 100%{transform:rotateY(180deg) scale(1)} }
+
+  /* Win + cupón */
+  .win { display:none; margin-top:18px; background:#141414; border:1px solid #222;
+    padding:16px 22px; border-radius:14px; text-align:center; max-width:380px; width:100%; }
+  .win.show { display:block; }
+  .win h2 { font-size:1.1rem; color:#ffd54f; margin-bottom:4px; }
+  .win p { font-size:0.82rem; color:#888; margin-bottom:12px; }
+
+  .cupon-box { background:#1a1a1a; border:2px dashed #ffd54f; border-radius:10px;
+    padding:14px; margin:12px 0; display:none; }
+  .cupon-box.show { display:block; }
+  .cupon-titulo { font-size:0.72rem; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px; }
+  .cupon-descuento { font-size:1.6rem; font-weight:800; color:#ffd54f; }
+  .cupon-sub { font-size:0.72rem; color:#888; margin:2px 0 8px; }
+  .cupon-codigo { font-size:1.1rem; font-weight:800; color:#fff; letter-spacing:3px;
+    background:#000; padding:6px 14px; border-radius:6px; display:inline-block; }
+  .cupon-aviso { font-size:0.68rem; color:#c0392b; margin-top:6px; }
+
+  .cupon-miss { background:#1a1a1a; border:1px solid #222; border-radius:10px;
+    padding:10px; margin:10px 0; display:none; font-size:0.8rem; color:#555; }
+  .cupon-miss.show { display:block; }
+
+  button.reset { background:#c0392b; color:#fff; border:none;
+    padding:9px 22px; border-radius:999px; font-weight:700;
+    font-size:0.85rem; cursor:pointer; font-family:inherit; margin-top:8px; }
+
+  .ranking { margin-top:16px; width:100%; max-width:420px;
+    background:#141414; border:1px solid #222; border-radius:14px; padding:12px 16px; }
+  .ranking h3 { font-size:0.88rem; text-align:center; margin-bottom:8px; color:#ffd54f; font-weight:700; }
+  .ranking-row { display:grid; grid-template-columns:22px 46px 1fr 55px;
+    gap:8px; align-items:center; font-size:0.76rem; padding:4px 0; border-bottom:1px solid #1e1e1e; }
+  .ranking-row:last-child { border-bottom:none; }
+  .ranking-row .pos { color:#444; font-weight:700; }
+  .ranking-row .ini { font-weight:800; letter-spacing:1px; color:#ffd54f; }
+  .ranking-row .det { color:#666; font-size:0.68rem; }
+  .ranking-row .pts { text-align:right; font-weight:700; }
+  .ranking-empty { text-align:center; font-size:0.74rem; color:#555; padding:6px 0; }
+
+  .modal-overlay { display:none; position:fixed; inset:0; z-index:999;
+    background:rgba(0,0,0,.82); align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.activo { display:flex; }
+  .modal-box { background:#141414; border:2px solid #ffd54f; border-radius:14px;
+    padding:22px 24px; max-width:300px; width:100%; text-align:center; }
+  .modal-box .trofeo { font-size:2rem; display:block; margin-bottom:4px; }
+  .modal-box h3 { color:#ffd54f; font-size:1.05rem; margin-bottom:4px; font-weight:800; }
+  .modal-box p { color:#777; font-size:0.74rem; margin-bottom:16px; }
+  .iniciales-inputs { display:flex; gap:10px; justify-content:center; margin-bottom:16px; }
+  .iniciales-inputs input { width:46px; height:54px; text-align:center; font-size:1.5rem; font-weight:800;
+    text-transform:uppercase; font-family:inherit; background:#1f1f1f; color:#ffd54f;
+    border:2px solid #333; border-radius:8px; caret-color:#ffd54f; }
+  .iniciales-inputs input:focus { outline:none; border-color:#ffd54f; }
+  .btn-guardar-record { background:#ffd54f; color:#1a1a1a; border:none; padding:10px 24px;
+    border-radius:999px; font-weight:700; cursor:pointer; font-size:0.86rem; width:100%; font-family:inherit; }
+  .btn-guardar-record:disabled { opacity:.5; cursor:not-allowed; }
+
+  footer { margin-top:20px; font-size:0.7rem; color:#333; text-align:center; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="btn-volver" onclick="history.back()">← Volver</button>
+  <h1>🎮 Memoria PS2</h1>
+  <div class="tagline">encontrá los pares · ganá descuentos</div>
+  <div class="app-version">v1</div>
+</div>
+
+<div class="dificultad">
+  <button class="btn-dif activo" id="dif-facil"  onclick="setDificultad('facil')">😊 Fácil (8 pares)</button>
+  <button class="btn-dif"        id="dif-dificil" onclick="setDificultad('dificil')">💀 Difícil (12 pares)</button>
+</div>
+
+<div id="cuponesBadge">🎟️ <span id="cuponesCount">0</span> cupón(es) acumulado(s) — ¡No cierres sin comprar!</div>
+
+<div class="stats">
+  <div class="stat"><div class="num" id="moves">0</div><div class="lbl">Intentos</div></div>
+  <div class="stat"><div class="num" id="pairs">0/0</div><div class="lbl">Pares</div></div>
+  <div class="stat"><div class="num" id="time">00:00</div><div class="lbl">Tiempo</div></div>
+</div>
+
+<div class="board grid-4" id="board"></div>
+
+<div class="win" id="win">
+  <h2>🎉 ¡Todos los pares encontrados!</h2>
+  <p id="winText"></p>
+
+  <div class="cupon-box" id="cuponBox">
+    <div class="cupon-titulo">🎟️ ¡Ganaste un cupón!</div>
+    <div class="cupon-descuento">$700 OFF</div>
+    <div class="cupon-sub">en 1 juego PS2 — válido solo hoy si comprás</div>
+    <div class="cupon-codigo" id="cuponCodigo">—</div>
+    <div class="cupon-aviso">⚠️ Se pierde si salís sin comprar</div>
+  </div>
+
+  <div class="cupon-miss" id="cuponMiss">
+    😔 Esta vez no salió el cupón — ¡seguí jugando!
+  </div>
+
+  <button class="reset" onclick="iniciar()">🔀 Jugar de nuevo</button>
+  <br>
+  <button class="reset" style="background:#25D366; margin-top:8px;"
+    onclick="window.location.href='https://juegos-ps2.vercel.app'">
+    🛒 Ir al catálogo
+  </button>
+</div>
+
+<div class="ranking" id="ranking" style="display:none">
+  <h3>🏆 Mejores puntajes</h3>
+  <div id="rankingList"></div>
+</div>
+
+<div class="modal-overlay" id="modalIniciales">
+  <div class="modal-box">
+    <span class="trofeo">🏆</span>
+    <h3>¡Nuevo récord!</h3>
+    <p>Entraste al top 10. Ingresá tus iniciales:</p>
+    <div class="iniciales-inputs">
+      <input type="text" maxlength="1" id="ini1" autocapitalize="characters">
+      <input type="text" maxlength="1" id="ini2" autocapitalize="characters">
+      <input type="text" maxlength="1" id="ini3" autocapitalize="characters">
+    </div>
+    <button class="btn-guardar-record" id="btnGuardarRecord" onclick="guardarIniciales()">Guardar</button>
+  </div>
+</div>
+
+<footer>Almacén Copihue 🌸 · juegos-ps2.vercel.app</footer>
+
+<script>
+const GAMES_URL  = 'https://script.google.com/macros/s/AKfycbyegP1TSQSccsjYorXIpgAJH1nVAO9fzmg3hwKQNk116Mgx1M6Rs1XUn0JkiusVmGareg/exec';
+const BASE_IMG   = 'https://juegos-ps2.vercel.app/caratulas/';
+const STORAGE_KEY = 'ps2_cupones';
+
+const JUEGOS = [
+  { nombre:"GOD OF WAR",              img:"god_of_war_1.jpg" },
+  { nombre:"GTA SAN ANDREAS",         img:"gta_san_andreas.jpg" },
+  { nombre:"RESIDENT EVIL 4",         img:"resident_evil_4.jpg" },
+  { nombre:"DRAGON BALL Z TENKAICHI 3",img:"dragon_ball_z_tenkaichi_3.jpg" },
+  { nombre:"MORTAL KOMBAT ARMAGEDÓN", img:"mortal_kombat_armagedon.jpg" },
+  { nombre:"NEED FOR SPEED CARBON",   img:"need_for_speed_carbono.jpg" },
+  { nombre:"TEKKEN 5",                img:"tekken_5.jpg" },
+  { nombre:"BURNOUT DOMINATOR",       img:"burnout_dominator.jpg" },
+  { nombre:"SHADOW OF THE COLOSSUS",  img:"shadow_of_the_colosus.jpg" },
+  { nombre:"SILENT HILL 3",           img:"silent_hill_3.jpg" },
+  { nombre:"ACE COMBAT 4",            img:"ace_combat_4.jpg" },
+  { nombre:"FLATOUT 2",               img:"flatout_2.jpg" },
+  { nombre:"BLACK",                   img:"black.jpg" },
+  { nombre:"ERAGON",                  img:"eragon.jpg" },
+  { nombre:"WRC RALLY EVOLVED",       img:"wrc_rally_evolved.jpg" },
+  { nombre:"NARUTO ULTIMATE NINJA",   img:"naruto_ultimate_ninja.jpg" },
+  { nombre:"BATMAN BEGINS",           img:"batman_begins.jpg" },
+  { nombre:"METAL GEAR SOLID 3",      img:"metal_gear_solid_3_snake_eater.jpg" },
+  { nombre:"GRAN TURISMO 4",          img:"gran_turismo_4.jpg" },
+  { nombre:"SPIDER-MAN 3",            img:"spiderman_3.jpg" },
+  { nombre:"SOUL CALIBUR 3",          img:"soulcalibur_3.jpg" },
+  { nombre:"GTA LIBERTY CITY",        img:"gta_liberti_city.jpg" },
+  { nombre:"SCARFACE",                img:"scarface.jpg" },
+  { nombre:"HULK",                    img:"hulk.jpg" },
+];
+
+// ── CUPONES en localStorage ───────────────────────────────────
+function getCupones() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveCupones(arr) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); } catch {}
+}
+function actualizarBadge() {
+  const c = getCupones();
+  const badge = document.getElementById('cuponesBadge');
+  document.getElementById('cuponesCount').textContent = c.length;
+  badge.style.display = c.length > 0 ? 'block' : 'none';
+}
+
+// Generar código único
+function generarCodigo() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let cod = 'PS2-';
+  for (let i = 0; i < 4; i++) cod += chars[Math.floor(Math.random() * chars.length)];
+  return cod;
+}
+
+// Probabilidad de cupón según intentos
+function calcularCupon(moves, pares) {
+  let prob;
+  if (pares === 8) {
+    prob = moves < 18 ? 0.40 : moves < 30 ? 0.22 : 0.10;
+  } else {
+    prob = moves < 28 ? 0.40 : moves < 45 ? 0.22 : 0.10;
+  }
+  return Math.random() < prob;
+}
+
+// ── ESTADO ───────────────────────────────────────────────────
+let dificultad = 'facil', PARES = 8;
+let deck=[], flipped=[], matched=0, moves=0, seconds=0;
+let timer=null, lock=false, pendingTO=null, ultimoPuntaje=null;
+
+function setDificultad(dif) {
+  dificultad = dif; PARES = dif === 'facil' ? 8 : 12;
+  document.getElementById('dif-facil').classList.toggle('activo', dif==='facil');
+  document.getElementById('dif-dificil').classList.toggle('activo', dif==='dificil');
+  document.getElementById('board').className = 'board ' + (dif==='facil' ? 'grid-4' : 'grid-6');
+  iniciar();
+}
+
+function shuffle(arr) {
+  for (let i=arr.length-1;i>0;i--) {
+    const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function iniciar() {
+  clearInterval(timer);
+  if (pendingTO) { clearTimeout(pendingTO); pendingTO=null; }
+  moves=0; seconds=0; matched=0; flipped=[]; lock=false;
+  document.getElementById('moves').textContent='0';
+  document.getElementById('pairs').textContent=`0/${PARES}`;
+  document.getElementById('time').textContent='00:00';
+  document.getElementById('win').classList.remove('show');
+  document.getElementById('ranking').style.display='none';
+  document.getElementById('cuponBox').classList.remove('show');
+  document.getElementById('cuponMiss').classList.remove('show');
+
+  const elegidos = shuffle([...JUEGOS]).slice(0, PARES);
+  deck = shuffle([...elegidos, ...elegidos]);
+
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  deck.forEach(juego => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.nombre = juego.nombre;
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="face back"></div>
+        <div class="face front">
+          <img src="${BASE_IMG}${juego.img}" alt="${juego.nombre}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+          <div class="sin-foto" style="display:none">🎮</div>
+        </div>
+      </div>`;
+    card.addEventListener('click', () => flipCard(card));
+    board.appendChild(card);
+  });
+
+  timer = setInterval(() => {
+    seconds++;
+    const m=String(Math.floor(seconds/60)).padStart(2,'0');
+    const s=String(seconds%60).padStart(2,'0');
+    document.getElementById('time').textContent=`${m}:${s}`;
+  }, 1000);
+
+  actualizarBadge();
+}
+
+function flipCard(card) {
+  if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+  if (lock) {
+    if (pendingTO) { clearTimeout(pendingTO); pendingTO=null; }
+    flipped.forEach(c => c.classList.remove('flipped'));
+    flipped=[]; lock=false;
+  }
+  if (flipped.length===2) return;
+  card.classList.add('flipped');
+  flipped.push(card);
+  if (flipped.length===2) {
+    moves++;
+    document.getElementById('moves').textContent=moves;
+    lock=true;
+    const [a,b]=flipped;
+    if (a.dataset.nombre===b.dataset.nombre) {
+      pendingTO=setTimeout(()=>{
+        a.classList.add('matched'); b.classList.add('matched');
+        matched++;
+        document.getElementById('pairs').textContent=`${matched}/${PARES}`;
+        flipped=[]; lock=false; pendingTO=null;
+        if (matched===PARES) ganar();
+      },350);
+    } else {
+      pendingTO=setTimeout(()=>{
+        a.classList.remove('flipped'); b.classList.remove('flipped');
+        flipped=[]; lock=false; pendingTO=null;
+      },900);
+    }
+  }
+}
+
+async function ganar() {
+  clearInterval(timer);
+  const m=String(Math.floor(seconds/60)).padStart(2,'0');
+  const s=String(seconds%60).padStart(2,'0');
+  const tiempoTexto=`${m}:${s}`;
+  document.getElementById('winText').textContent=
+    `${moves} intentos en ${tiempoTexto} — ${PARES} pares encontrados.`;
+  document.getElementById('win').classList.add('show');
+
+  // ── Cupón ──
+  const saleCupon = calcularCupon(moves, PARES);
+  if (saleCupon) {
+    const codigo = generarCodigo();
+    const cupones = getCupones();
+    cupones.push({ codigo, descuento: 700, juego: 'ps2-memoria' });
+    saveCupones(cupones);
+    actualizarBadge();
+    document.getElementById('cuponCodigo').textContent = codigo;
+    document.getElementById('cuponBox').classList.add('show');
+    // Registrar en planilla
+    fetchGames('registrarCupon', { codigo, juego:'ps2-memoria', descuento:700 }).catch(()=>{});
+  } else {
+    document.getElementById('cuponMiss').classList.add('show');
+  }
+
+  // ── Ranking ──
+  const puntaje = Math.max(0, (PARES*40) - (moves*4) - (seconds*2));
+  const detalle = `${moves} int · ${tiempoTexto}`;
+  ultimoPuntaje = { puntaje, detalle };
+  const nombreJuego = dificultad==='facil' ? 'ps2-memoria-facil' : 'ps2-memoria-dificil';
+  try {
+    const res = await fetchGames('obtenerRecords', { juego: nombreJuego });
+    const records = (res.ok && res.records) ? res.records : [];
+    mostrarRanking(records);
+    if (records.length<10 || puntaje>records[records.length-1].puntaje) abrirModalIniciales();
+  } catch {}
+}
+
+function mostrarRanking(records) {
+  document.getElementById('ranking').style.display='block';
+  const cont = document.getElementById('rankingList');
+  if (!records||!records.length) {
+    cont.innerHTML='<div class="ranking-empty">¡Sé el primero!</div>'; return;
+  }
+  cont.innerHTML = records.map((r,i)=>`
+    <div class="ranking-row">
+      <span class="pos">${i+1}º</span>
+      <span class="ini">${r.iniciales}</span>
+      <span class="det">${r.detalle}</span>
+      <span class="pts">${r.puntaje}</span>
+    </div>`).join('');
+}
+
+function abrirModalIniciales() {
+  ['ini1','ini2','ini3'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('modalIniciales').classList.add('activo');
+  setTimeout(()=>document.getElementById('ini1').focus(),100);
+}
+
+async function guardarIniciales() {
+  const iniciales=['ini1','ini2','ini3'].map(id=>document.getElementById(id).value.trim()).join('').toUpperCase()||'???';
+  const btn=document.getElementById('btnGuardarRecord');
+  btn.disabled=true; btn.textContent='Guardando...';
+  const nombreJuego = dificultad==='facil' ? 'ps2-memoria-facil' : 'ps2-memoria-dificil';
+  try {
+    await fetchGames('guardarRecord',{juego:nombreJuego,iniciales,puntaje:ultimoPuntaje.puntaje,detalle:ultimoPuntaje.detalle});
+    const res=await fetchGames('obtenerRecords',{juego:nombreJuego});
+    if (res.ok&&res.records) mostrarRanking(res.records);
+  } catch {}
+  finally {
+    document.getElementById('modalIniciales').classList.remove('activo');
+    btn.disabled=false; btn.textContent='Guardar';
+  }
+}
+
+async function fetchGames(action, data) {
+  let url=GAMES_URL+'?action='+action;
+  if (data) url+='&data='+encodeURIComponent(JSON.stringify(data));
+  const r=await fetch(url); return r.json();
+}
+
+['ini1','ini2','ini3'].forEach((id,idx,arr)=>{
+  document.getElementById(id).addEventListener('input',e=>{
+    e.target.value=e.target.value.replace(/[^a-zA-Z]/g,'').toUpperCase();
+    if (e.target.value&&idx<arr.length-1) document.getElementById(arr[idx+1]).focus();
+  });
+});
+
+iniciar();
+</script>
+</body>
+</html>
