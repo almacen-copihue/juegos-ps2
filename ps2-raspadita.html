@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🎮 Raspadita PS2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&display=swap');
+  :root { --rojo:#c0392b; --rojo-dark:#922b21; --dorado:#ffd54f; --oscuro:#0a0a0a; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { overscroll-behavior-y:contain; background:var(--oscuro); }
+  body { min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    font-family:'Space Grotesk',system-ui,sans-serif; padding:16px 12px 32px; color:#f2f2f2; }
+
+  .header { text-align:center; margin-bottom:14px; position:relative; width:100%; max-width:420px; }
+  .header h1 { font-size:clamp(1.5rem,7vw,2rem); font-weight:800; color:#f44; }
+  .header .tagline { font-size:0.65rem; color:#555; letter-spacing:3px; text-transform:uppercase; margin-top:3px; }
+  .app-version { position:absolute; top:0; right:4px; font-size:0.58rem; color:#333; }
+  .btn-volver { position:absolute; top:0; left:0; background:none; border:none;
+    color:#666; font-size:0.8rem; cursor:pointer; font-family:inherit; }
+
+  /* Aviso cupones */
+  #cuponesBadge { display:none; background:#c0392b; color:#fff; border-radius:20px;
+    padding:4px 12px; font-size:0.78rem; font-weight:700; margin-bottom:10px;
+    text-align:center; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+
+  /* Ticket */
+  .ticket { background:#141414; border:1px solid #2a2a2a; border-radius:16px;
+    width:100%; max-width:420px; overflow:hidden;
+    box-shadow:0 16px 40px rgba(0,0,0,.6), 0 0 0 2px #c0392b44; }
+  .ticket-top { height:8px; background:repeating-linear-gradient(90deg,#c0392b 0,#c0392b 12px,#0a0a0a 12px,#0a0a0a 16px); }
+  .ticket-inner { padding:16px 18px 20px; }
+  .ticket-bottom { height:8px; background:repeating-linear-gradient(90deg,#c0392b 0,#c0392b 12px,#0a0a0a 12px,#0a0a0a 16px); }
+
+  .ticket-title { font-size:1.3rem; font-weight:800; color:#f44; text-align:center; margin-bottom:2px; }
+  .ticket-sub { font-size:0.65rem; color:#555; text-align:center; letter-spacing:3px;
+    text-transform:uppercase; margin-bottom:14px; }
+
+  /* Aviso */
+  .aviso { background:#1a0a0a; border:1px solid #c0392b33; border-radius:8px;
+    padding:8px 10px; margin-bottom:12px; font-size:0.72rem; color:#888; text-align:center; }
+  .aviso strong { color:#f88; }
+
+  /* Grid raspadita */
+  .scratch-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:14px; }
+  .cell { position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden;
+    cursor:crosshair; border:1px solid #2a2a2a; background:#1a1a1a; user-select:none; }
+  .cell-prize { position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:4px; background:#111; padding:6px; }
+  .cell-prize .prize-emoji { font-size:1.8rem; line-height:1; }
+  .cell-prize .prize-label { font-size:clamp(0.5rem,1.8vw,0.62rem); font-weight:700;
+    text-transform:uppercase; color:#f44; letter-spacing:0.5px; text-align:center;
+    line-height:1.2; }
+  .scratch-layer { position:absolute; inset:0; touch-action:none; border-radius:6px; }
+
+  /* Banner resultado */
+  .result-banner { background:#1a1a1a; border:1px solid #333; border-radius:8px;
+    padding:11px 14px; text-align:center; margin-bottom:12px; min-height:52px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .result-banner.ganador { background:linear-gradient(135deg,#16311f,#0d2015);
+    border-color:#27ae60; animation:pulseWin 1.4s ease-in-out infinite; }
+  @keyframes pulseWin { 0%,100%{box-shadow:0 0 0 0 rgba(39,174,96,.4)} 50%{box-shadow:0 0 0 7px rgba(39,174,96,0)} }
+  .result-text { font-size:1rem; font-weight:800; color:#fff; }
+  .result-sub  { font-size:0.72rem; color:#666; margin-top:2px; }
+  .result-banner.ganador .result-text { color:#4ade80; }
+  .result-banner.ganador .result-sub  { color:#86efac; }
+
+  /* Cupón */
+  .cupon-box { background:#1a1a1a; border:2px dashed var(--dorado); border-radius:10px;
+    padding:14px; margin-bottom:12px; text-align:center; display:none; }
+  .cupon-box.show { display:block; }
+  .cupon-titulo { font-size:0.68rem; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px; }
+  .cupon-descuento { font-size:1.5rem; font-weight:800; color:var(--dorado); }
+  .cupon-sub { font-size:0.7rem; color:#888; margin:2px 0 8px; }
+  .cupon-codigo { font-size:1.1rem; font-weight:800; color:#fff; letter-spacing:3px;
+    background:#000; padding:6px 14px; border-radius:6px; display:inline-block; }
+  .cupon-aviso { font-size:0.65rem; color:#c0392b; margin-top:6px; }
+
+  /* Botones */
+  .btn-group { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+  .btn-group.solo { grid-template-columns:1fr; }
+  .btn { padding:10px 6px; border:none; border-radius:7px; font-family:inherit;
+    font-weight:700; font-size:0.78rem; cursor:pointer; text-decoration:none;
+    display:flex; align-items:center; justify-content:center; transition:transform .1s; }
+  .btn:active { transform:scale(.97); }
+  .btn-primary  { background:var(--rojo); color:#fff; }
+  .btn-reveal   { background:#222; color:#aaa; border:1px solid #333; }
+  .btn-wa       { background:#25d366; color:#fff; }
+  .btn-catalogo { background:#1565c0; color:#fff; }
+
+  .instructions { margin-top:12px; color:#333; font-size:0.68rem; text-align:center; }
+
+  .modal-overlay { display:none; position:fixed; inset:0; z-index:999;
+    background:rgba(0,0,0,.75); align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.activo { display:flex; }
+  .modal-box { background:#141414; border:1px solid #333; border-radius:14px;
+    padding:20px 22px; max-width:300px; width:100%; text-align:center; }
+  .modal-box p { font-size:0.88rem; color:#ccc; margin-bottom:16px; line-height:1.5; }
+  .modal-btns { display:flex; gap:10px; }
+  .modal-btns button { flex:1; padding:10px; border-radius:8px; border:none;
+    font-weight:700; font-size:0.82rem; cursor:pointer; font-family:inherit; }
+  .modal-btn-cancelar  { background:#2a2a2a; color:#888; }
+  .modal-btn-confirmar { background:var(--rojo); color:#fff; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="btn-volver" onclick="confirmarVolver()">← Volver</button>
+  <h1>🎮 Raspadita PS2</h1>
+  <div class="tagline">Almacén Copihue · raspá y ganá</div>
+  <div class="app-version">v1</div>
+</div>
+
+<div id="cuponesBadge">🎟️ <span id="cuponesCount">0</span> cupón(es) acumulado(s) — ¡usalo al comprar!</div>
+
+<div class="ticket">
+  <div class="ticket-top"></div>
+  <div class="ticket-inner">
+    <div class="ticket-title">🎰 Raspadita PS2</div>
+    <div class="ticket-sub">raspá · 3 iguales = premio</div>
+
+    <div class="aviso">
+      🎟️ Podés ganar un <strong>cupón $700 OFF</strong> en tu próximo juego PS2<br>
+      <span style="color:#555; font-size:0.65rem;">Probabilidad reducida — el esfuerzo vale más que la suerte</span>
+    </div>
+
+    <div class="scratch-grid" id="grid"></div>
+
+    <div class="result-banner" id="resultBanner">
+      <div class="result-text" id="resultText">Raspá las 9 casillas</div>
+      <div class="result-sub"  id="resultSub">🎉 ¡3 iguales en línea = cupón!</div>
+    </div>
+
+    <div class="cupon-box" id="cuponBox">
+      <div class="cupon-titulo">🎟️ ¡Ganaste un cupón!</div>
+      <div class="cupon-descuento">$700 OFF</div>
+      <div class="cupon-sub">en 1 juego PS2 — válido solo si comprás hoy</div>
+      <div class="cupon-codigo" id="cuponCodigo">—</div>
+      <div class="cupon-aviso">⚠️ Se pierde si salís sin comprar</div>
+    </div>
+
+    <div class="btn-group" id="btnGroup">
+      <button class="btn btn-reveal" id="btnReveal">Ver todo</button>
+      <button class="btn btn-primary" id="btnNew" style="display:none">Nueva 🎲</button>
+      <a class="btn btn-catalogo" id="btnCatalogo" href="https://juegos-ps2.vercel.app"
+         style="display:none">🛒 Al catálogo</a>
+    </div>
+  </div>
+  <div class="ticket-bottom"></div>
+</div>
+
+<div class="instructions">🎮 1 raspadita por visita · ¡Jugá Memoria o Puzzle para más chances!</div>
+
+<div class="modal-overlay" id="modalVolver">
+  <div class="modal-box">
+    <p>¿Salir de la raspadita? Si tenés cupones sin usar, <strong>no los pierdas</strong>.</p>
+    <div class="modal-btns">
+      <button class="modal-btn-cancelar"  onclick="cerrarModal()">Quedarme</button>
+      <button class="modal-btn-confirmar" onclick="history.back()">Salir</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const GAMES_URL   = 'https://script.google.com/macros/s/AKfycbyegP1TSQSccsjYorXIpgAJH1nVAO9fzmg3hwKQNk116Mgx1M6Rs1XUn0JkiusVmGareg/exec';
+const STORAGE_KEY = 'ps2_cupones';
+const PROB_GANAR  = 0.08; // 8% de chance — sin esfuerzo, menos premio
+
+// Símbolos — mayormente "nada", uno es el cupón
+const SIMBOLOS = [
+  { emoji:'🎮', label:'Juego PS2',  esPremio:true  },
+  { emoji:'💿', label:'DVD',        esPremio:false },
+  { emoji:'🕹️', label:'Control',   esPremio:false },
+  { emoji:'⭐', label:'Estrella',   esPremio:false },
+  { emoji:'🔥', label:'Fuego',      esPremio:false },
+  { emoji:'❌', label:'Nada',       esPremio:false },
+];
+
+let grid = [], revealed = 0, gameOver = false, codigoActual = null;
+const LINEAS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+// ── CUPONES ───────────────────────────────────────────────────
+function getCupones() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); } catch { return []; } }
+function saveCupones(arr) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); } catch {} }
+function actualizarBadge() {
+  const c=getCupones();
+  document.getElementById('cuponesCount').textContent=c.length;
+  document.getElementById('cuponesBadge').style.display=c.length>0?'block':'none';
+}
+function generarCodigo() {
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let cod='PS2-';
+  for(let i=0;i<4;i++) cod+=chars[Math.floor(Math.random()*chars.length)];
+  return cod;
+}
+
+// ── GENERAR GRILLA ────────────────────────────────────────────
+function generarGrilla() {
+  const gana = Math.random() < PROB_GANAR;
+  if (gana) {
+    // 3 símbolos premio en línea + 6 distintos
+    const lineaGanadora = LINEAS[Math.floor(Math.random()*LINEAS.length)];
+    const arr = Array(9).fill(null);
+    lineaGanadora.forEach(i => arr[i] = {...SIMBOLOS[0]}); // 🎮 en la línea
+    for(let i=0;i<9;i++) {
+      if (!arr[i]) {
+        // Símbolo que NO sea premio para no armar doble línea
+        const opts = SIMBOLOS.slice(1);
+        arr[i] = {...opts[Math.floor(Math.random()*opts.length)]};
+      }
+    }
+    return arr;
+  } else {
+    // Sin línea ganadora — mezcla aleatoria sin 3 iguales en línea
+    let arr, intentos=0;
+    do {
+      arr = Array(9).fill(null).map(()=>{
+        const opts = SIMBOLOS.slice(1); // nunca el premio
+        return {...opts[Math.floor(Math.random()*opts.length)]};
+      });
+      intentos++;
+    } while (verificarLinea(arr) && intentos < 30);
+    return arr;
+  }
+}
+
+function verificarLinea(arr) {
+  return LINEAS.some(l => arr[l[0]] && arr[l[1]] && arr[l[2]] &&
+    arr[l[0]].emoji === arr[l[1]].emoji && arr[l[1]].emoji === arr[l[2]].emoji);
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function iniciar() {
+  grid = generarGrilla();
+  revealed = 0; gameOver = false; codigoActual = null;
+  document.getElementById('resultText').textContent = 'Raspá las 9 casillas';
+  document.getElementById('resultSub').textContent  = '🎉 ¡3 iguales en línea = cupón!';
+  document.getElementById('resultBanner').className = 'result-banner';
+  document.getElementById('cuponBox').classList.remove('show');
+  document.getElementById('btnReveal').style.display = '';
+  document.getElementById('btnNew').style.display    = 'none';
+  document.getElementById('btnCatalogo').style.display = 'none';
+  actualizarBadge();
+  renderGrid();
+}
+
+function renderGrid() {
+  const cont = document.getElementById('grid');
+  cont.innerHTML = '';
+  grid.forEach((sym, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.innerHTML = `
+      <div class="cell-prize">
+        <div class="prize-emoji">${sym.emoji}</div>
+        <div class="prize-label">${sym.label}</div>
+      </div>
+      <canvas class="scratch-layer" id="canvas-${i}" width="200" height="200"></canvas>`;
+    cont.appendChild(cell);
+    setupScratch(cell.querySelector('canvas'), i);
+  });
+}
+
+function setupScratch(canvas, idx) {
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#2a2a2a';
+  ctx.fillRect(0,0,200,200);
+  // Textura PS2
+  ctx.fillStyle = '#333';
+  ctx.font='bold 60px serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('PS2', 100, 100);
+
+  let painting = false;
+  let pctRevealed = 0;
+
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x:(src.clientX-r.left)*(200/r.width), y:(src.clientY-r.top)*(200/r.height) };
+  }
+
+  function scratch(e) {
+    if (!painting||gameOver) return;
+    e.preventDefault();
+    const {x,y} = getPos(e);
+    ctx.globalCompositeOperation='destination-out';
+    ctx.beginPath(); ctx.arc(x,y,22,0,Math.PI*2); ctx.fill();
+    checkReveal();
+  }
+
+  function checkReveal() {
+    const d = ctx.getImageData(0,0,200,200).data;
+    let t=0;
+    for(let i=3;i<d.length;i+=4) if(d[i]<128) t++;
+    pctRevealed = t/(200*200);
+    if (pctRevealed>0.65 && !canvas.dataset.counted) {
+      canvas.dataset.counted='1';
+      revealed++;
+      if (revealed===9) mostrarResultado();
+    }
+  }
+
+  canvas.addEventListener('mousedown',  e=>{painting=true; scratch(e);});
+  canvas.addEventListener('mousemove',  scratch);
+  canvas.addEventListener('mouseup',    ()=>painting=false);
+  canvas.addEventListener('touchstart', e=>{painting=true; scratch(e);},{passive:false});
+  canvas.addEventListener('touchmove',  scratch,{passive:false});
+  canvas.addEventListener('touchend',   ()=>painting=false);
+}
+
+function revelarTodo() {
+  document.querySelectorAll('.scratch-layer').forEach((c,i)=>{
+    const ctx=c.getContext('2d');
+    ctx.clearRect(0,0,200,200);
+    if (!c.dataset.counted) { c.dataset.counted='1'; revealed++; }
+  });
+  if (revealed>=9) mostrarResultado();
+}
+
+function mostrarResultado() {
+  if (gameOver) return;
+  gameOver = true;
+  const gana = verificarLinea(grid);
+  const banner = document.getElementById('resultBanner');
+  document.getElementById('btnReveal').style.display   = 'none';
+  document.getElementById('btnNew').style.display      = '';
+  document.getElementById('btnCatalogo').style.display = '';
+
+  if (gana) {
+    banner.className = 'result-banner ganador';
+    document.getElementById('resultText').textContent = '🎉 ¡Ganaste un cupón!';
+    document.getElementById('resultSub').textContent  = '$700 de descuento en 1 juego PS2';
+    const codigo = generarCodigo();
+    codigoActual = codigo;
+    const cupones = getCupones();
+    cupones.push({ codigo, descuento:700, juego:'ps2-raspadita' });
+    saveCupones(cupones);
+    actualizarBadge();
+    document.getElementById('cuponCodigo').textContent = codigo;
+    document.getElementById('cuponBox').classList.add('show');
+    fetchGames('registrarCupon',{codigo,juego:'ps2-raspadita',descuento:700}).catch(()=>{});
+  } else {
+    document.getElementById('resultText').textContent = '😔 Sin suerte esta vez';
+    document.getElementById('resultSub').textContent  = '¡Jugá Memoria o Puzzle para más chances!';
+  }
+}
+
+async function fetchGames(action, data) {
+  let url=GAMES_URL+'?action='+action;
+  if(data) url+='&data='+encodeURIComponent(JSON.stringify(data));
+  const r=await fetch(url); return r.json();
+}
+
+function confirmarVolver() {
+  if (getCupones().length>0) {
+    document.getElementById('modalVolver').classList.add('activo');
+  } else {
+    history.back();
+  }
+}
+function cerrarModal() { document.getElementById('modalVolver').classList.remove('activo'); }
+
+history.pushState(null,'',location.href);
+window.addEventListener('popstate',()=>{
+  history.pushState(null,'',location.href);
+  confirmarVolver();
+});
+
+document.getElementById('btnReveal').addEventListener('click', revelarTodo);
+document.getElementById('btnNew').addEventListener('click', iniciar);
+
+iniciar();
+</script>
+</body>
+</html>

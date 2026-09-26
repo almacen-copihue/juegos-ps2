@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🎰 Tragamonedas PS2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&display=swap');
+  :root { --rojo:#c0392b; --dorado:#ffd54f; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { overscroll-behavior-y:contain; background:#0a0a0a; }
+  body { min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    font-family:'Space Grotesk',system-ui,sans-serif; padding:16px 12px 32px; color:#f2f2f2; }
+
+  .header { text-align:center; margin-bottom:14px; position:relative; width:100%; max-width:420px; }
+  .header h1 { font-size:clamp(1.5rem,7vw,2rem); font-weight:800; color:#f44; }
+  .tagline { font-size:0.65rem; color:#555; letter-spacing:3px; text-transform:uppercase; margin-top:3px; }
+  .app-version { position:absolute; top:0; right:4px; font-size:0.58rem; color:#333; }
+  .btn-volver { position:absolute; top:0; left:0; background:none; border:none;
+    color:#666; font-size:0.8rem; cursor:pointer; font-family:inherit; }
+
+  #cuponesBadge { display:none; background:#c0392b; color:#fff; border-radius:20px;
+    padding:4px 12px; font-size:0.78rem; font-weight:700; margin-bottom:10px;
+    text-align:center; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+
+  /* Máquina */
+  .maquina { background:#141414; border:1px solid #2a2a2a; border-radius:20px;
+    width:100%; max-width:380px; padding:20px 16px;
+    box-shadow:0 16px 40px rgba(0,0,0,.7), 0 0 0 2px #c0392b44; }
+
+  /* Carretes */
+  .carretes { display:flex; gap:8px; margin-bottom:18px; }
+  .carrete { flex:1; background:#0d0d0d; border:2px solid #1e1e1e;
+    border-radius:12px; height:100px; overflow:hidden; position:relative; }
+  .carrete-inner { display:flex; flex-direction:column; transition:transform .0s linear; }
+  .simbolo { height:100px; display:flex; align-items:center; justify-content:center;
+    font-size:2.6rem; flex-shrink:0; }
+
+  /* Display resultado */
+  .display { background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px;
+    padding:10px 14px; text-align:center; margin-bottom:14px; min-height:54px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .display.ganador { border-color:#27ae60; background:#0d2015;
+    animation:pulseWin 1.4s ease-in-out infinite; }
+  @keyframes pulseWin { 0%,100%{box-shadow:0 0 0 0 rgba(39,174,96,.4)} 50%{box-shadow:0 0 0 7px rgba(39,174,96,0)} }
+  .display-text { font-size:1rem; font-weight:800; color:#fff; }
+  .display-sub  { font-size:0.72rem; color:#555; margin-top:2px; }
+  .display.ganador .display-text { color:#4ade80; }
+  .display.ganador .display-sub  { color:#86efac; }
+
+  /* Palanca */
+  .palanca-wrap { display:flex; justify-content:center; margin-bottom:14px; }
+  .btn-girar { background:linear-gradient(135deg,#c0392b,#922b21);
+    color:#fff; border:none; border-radius:999px; padding:14px 40px;
+    font-size:1rem; font-weight:800; cursor:pointer; font-family:inherit;
+    box-shadow:0 4px 14px rgba(192,57,43,.5); transition:transform .1s; }
+  .btn-girar:active { transform:scale(.96); }
+  .btn-girar:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+
+  /* Cupón */
+  .cupon-box { background:#1a1a1a; border:2px dashed var(--dorado); border-radius:10px;
+    padding:14px; margin-bottom:12px; text-align:center; display:none; }
+  .cupon-box.show { display:block; }
+  .cupon-titulo { font-size:0.68rem; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px; }
+  .cupon-descuento { font-size:1.5rem; font-weight:800; color:var(--dorado); }
+  .cupon-sub { font-size:0.7rem; color:#888; margin:2px 0 8px; }
+  .cupon-codigo { font-size:1.1rem; font-weight:800; color:#fff; letter-spacing:3px;
+    background:#000; padding:6px 14px; border-radius:6px; display:inline-block; }
+  .cupon-aviso { font-size:0.65rem; color:#c0392b; margin-top:6px; }
+
+  /* Stats */
+  .stats { display:flex; gap:0; background:#0d0d0d; border:1px solid #1e1e1e;
+    border-radius:10px; overflow:hidden; margin-bottom:14px; }
+  .stat { flex:1; text-align:center; padding:8px 4px; border-right:1px solid #1e1e1e; }
+  .stat:last-child { border-right:none; }
+  .stat .num { font-size:1rem; font-weight:700; color:var(--dorado); }
+  .stat .lbl { font-size:0.58rem; color:#444; text-transform:uppercase; letter-spacing:1px; }
+
+  .btn-catalogo { display:none; width:100%; padding:10px; background:#25d366;
+    color:#fff; border:none; border-radius:8px; font-weight:700; font-size:0.85rem;
+    cursor:pointer; font-family:inherit; margin-top:8px; }
+
+  .aviso { font-size:0.68rem; color:#333; text-align:center; margin-top:10px; }
+
+  .modal-overlay { display:none; position:fixed; inset:0; z-index:999;
+    background:rgba(0,0,0,.75); align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.activo { display:flex; }
+  .modal-box { background:#141414; border:1px solid #333; border-radius:14px;
+    padding:20px 22px; max-width:300px; width:100%; text-align:center; }
+  .modal-box p { font-size:0.88rem; color:#ccc; margin-bottom:16px; line-height:1.5; }
+  .modal-btns { display:flex; gap:10px; }
+  .modal-btns button { flex:1; padding:10px; border-radius:8px; border:none;
+    font-weight:700; font-size:0.82rem; cursor:pointer; font-family:inherit; }
+  .modal-btn-cancelar  { background:#2a2a2a; color:#888; }
+  .modal-btn-confirmar { background:var(--rojo); color:#fff; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="btn-volver" onclick="confirmarVolver()">← Volver</button>
+  <h1>🎰 Tragamonedas PS2</h1>
+  <div class="tagline">Almacén Copihue · girá y ganá</div>
+  <div class="app-version">v1</div>
+</div>
+
+<div id="cuponesBadge">🎟️ <span id="cuponesCount">0</span> cupón(es) — ¡usalo al comprar!</div>
+
+<div class="maquina">
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="statGiros">0</div><div class="lbl">Giros</div></div>
+    <div class="stat"><div class="num" id="statGanados">0</div><div class="lbl">Cupones</div></div>
+    <div class="stat"><div class="num" id="statTotal">$0</div><div class="lbl">Ganado</div></div>
+  </div>
+
+  <div class="carretes" id="carretes">
+    <div class="carrete" id="c0"><div class="carrete-inner" id="ci0"></div></div>
+    <div class="carrete" id="c1"><div class="carrete-inner" id="ci1"></div></div>
+    <div class="carrete" id="c2"><div class="carrete-inner" id="ci2"></div></div>
+  </div>
+
+  <div class="display" id="display">
+    <div class="display-text" id="displayText">Presioná GIRAR</div>
+    <div class="display-sub"  id="displaySub">¡3 iguales = cupón $700 OFF!</div>
+  </div>
+
+  <div class="cupon-box" id="cuponBox">
+    <div class="cupon-titulo">🎟️ ¡Ganaste un cupón!</div>
+    <div class="cupon-descuento">$700 OFF</div>
+    <div class="cupon-sub">en 1 juego PS2 — válido solo si comprás hoy</div>
+    <div class="cupon-codigo" id="cuponCodigo">—</div>
+    <div class="cupon-aviso">⚠️ Se pierde si salís sin comprar</div>
+  </div>
+
+  <div class="palanca-wrap">
+    <button class="btn-girar" id="btnGirar">🎰 GIRAR</button>
+  </div>
+
+  <button class="btn-catalogo" id="btnCatalogo"
+    onclick="window.location.href='https://juegos-ps2.vercel.app'">
+    🛒 Ir al catálogo
+  </button>
+
+</div>
+
+<div class="aviso">🎮 Probabilidad de cupón: 8% por giro · ¡Jugá Memoria para más chances!</div>
+
+<div class="modal-overlay" id="modalVolver">
+  <div class="modal-box">
+    <p>¿Salir? Si tenés cupones acumulados, <strong>usálos antes de cerrar</strong>.</p>
+    <div class="modal-btns">
+      <button class="modal-btn-cancelar"  onclick="cerrarModal()">Quedarme</button>
+      <button class="modal-btn-confirmar" onclick="history.back()">Salir</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const GAMES_URL   = 'https://script.google.com/macros/s/AKfycbyegP1TSQSccsjYorXIpgAJH1nVAO9fzmg3hwKQNk116Mgx1M6Rs1XUn0JkiusVmGareg/exec';
+const STORAGE_KEY = 'ps2_cupones';
+const PROB_GANAR  = 0.08; // 8%
+
+const SIMBOLOS = ['🎮','💿','🕹️','⭐','🔥','👾','🏆','💥'];
+
+let girando=false, giros=0, ganadosSession=0, totalGanado=0;
+
+// ── CUPONES ───────────────────────────────────────────────────
+function getCupones(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');}catch{return[];} }
+function saveCupones(arr){ try{localStorage.setItem(STORAGE_KEY,JSON.stringify(arr));}catch{} }
+function actualizarBadge(){
+  const c=getCupones();
+  document.getElementById('cuponesCount').textContent=c.length;
+  document.getElementById('cuponesBadge').style.display=c.length>0?'block':'none';
+}
+function generarCodigo(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let cod='PS2-'; for(let i=0;i<4;i++) cod+=chars[Math.floor(Math.random()*chars.length)];
+  return cod;
+}
+
+// ── CARRETES ─────────────────────────────────────────────────
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function buildCarrete(idx, simbolo_final) {
+  const ci = document.getElementById('ci'+idx);
+  // Tira de símbolos para animar (20 aleatorios + el final)
+  const tira = [];
+  for(let i=0;i<20;i++) tira.push(SIMBOLOS[Math.floor(Math.random()*SIMBOLOS.length)]);
+  tira.push(simbolo_final);
+  ci.innerHTML = tira.map(s=>`<div class="simbolo">${s}</div>`).join('');
+  return tira.length;
+}
+
+function animarCarrete(idx, simbolo_final, delay) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const ci    = document.getElementById('ci'+idx);
+      const total = buildCarrete(idx, simbolo_final);
+      const h     = 100; // altura por símbolo
+      const dest  = -(total - 1) * h;
+      // Animar con CSS
+      ci.style.transition = 'none';
+      ci.style.transform  = 'translateY(0)';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          ci.style.transition = `transform ${0.6 + idx*0.15}s cubic-bezier(.25,.1,.25,1)`;
+          ci.style.transform  = `translateY(${dest}px)`;
+          setTimeout(resolve, (0.6 + idx*0.15) * 1000 + 50);
+        });
+      });
+    }, delay);
+  });
+}
+
+// ── GIRAR ─────────────────────────────────────────────────────
+async function girar() {
+  if (girando) return;
+  girando = true;
+  document.getElementById('btnGirar').disabled = true;
+  document.getElementById('cuponBox').classList.remove('show');
+  document.getElementById('display').className = 'display';
+  document.getElementById('displayText').textContent = '🎰 Girando...';
+  document.getElementById('displaySub').textContent  = '';
+  document.getElementById('btnCatalogo').style.display = 'none';
+
+  giros++;
+  document.getElementById('statGiros').textContent = giros;
+
+  const gana = Math.random() < PROB_GANAR;
+  let resultado;
+  if (gana) {
+    const s = SIMBOLOS[Math.floor(Math.random()*SIMBOLOS.length)];
+    resultado = [s, s, s];
+  } else {
+    // Sin 3 iguales
+    do {
+      resultado = [0,1,2].map(()=>SIMBOLOS[Math.floor(Math.random()*SIMBOLOS.length)]);
+    } while(resultado[0]===resultado[1]&&resultado[1]===resultado[2]);
+  }
+
+  await Promise.all([
+    animarCarrete(0, resultado[0], 0),
+    animarCarrete(1, resultado[1], 150),
+    animarCarrete(2, resultado[2], 300),
+  ]);
+
+  // Mostrar resultado
+  if (gana) {
+    document.getElementById('display').className = 'display ganador';
+    document.getElementById('displayText').textContent = '🎉 ¡3 iguales! ¡Ganaste!';
+    document.getElementById('displaySub').textContent  = 'Cupón $700 OFF en 1 juego PS2';
+    const codigo = generarCodigo();
+    const cupones = getCupones(); cupones.push({codigo, descuento:700, juego:'ps2-tragamonedas'});
+    saveCupones(cupones); actualizarBadge();
+    document.getElementById('cuponCodigo').textContent = codigo;
+    document.getElementById('cuponBox').classList.add('show');
+    ganadosSession++; totalGanado+=700;
+    document.getElementById('statGanados').textContent = ganadosSession;
+    document.getElementById('statTotal').textContent   = '$'+totalGanado.toLocaleString('es-AR');
+    document.getElementById('btnCatalogo').style.display = 'block';
+    fetchGames('registrarCupon',{codigo,juego:'ps2-tragamonedas',descuento:700}).catch(()=>{});
+  } else {
+    document.getElementById('displayText').textContent = '😔 Sin suerte — ¡seguí intentando!';
+    document.getElementById('displaySub').textContent  = `${Math.round((1-PROB_GANAR)*100)}% de las veces no sale`;
+  }
+
+  girando=false;
+  document.getElementById('btnGirar').disabled=false;
+}
+
+async function fetchGames(action,data){
+  let url=GAMES_URL+'?action='+action;
+  if(data) url+='&data='+encodeURIComponent(JSON.stringify(data));
+  const r=await fetch(url); return r.json();
+}
+
+function confirmarVolver(){
+  if(getCupones().length>0) document.getElementById('modalVolver').classList.add('activo');
+  else history.back();
+}
+function cerrarModal(){ document.getElementById('modalVolver').classList.remove('activo'); }
+
+history.pushState(null,'',location.href);
+window.addEventListener('popstate',()=>{
+  history.pushState(null,'',location.href);
+  confirmarVolver();
+});
+
+document.getElementById('btnGirar').addEventListener('click', girar);
+
+// Inicializar carretes en reposo
+[0,1,2].forEach(i=>{
+  const ci=document.getElementById('ci'+i);
+  ci.innerHTML=`<div class="simbolo">🎮</div>`;
+});
+
+actualizarBadge();
+</script>
+</body>
+</html>
