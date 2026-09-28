@@ -2,188 +2,277 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>🎮 Juegos · PS2 Copihue</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>🎮 Zona de Juegos · PS2 Copihue</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&display=swap');
-  * { box-sizing:border-box; margin:0; padding:0; }
-  html,body { overscroll-behavior:contain; background:#0a0a0a; min-height:100vh; }
-  body { font-family:'Space Grotesk',system-ui,sans-serif; color:#f2f2f2;
-    display:flex; flex-direction:column; align-items:center; padding:20px 14px 40px; }
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@400;700;900&display=swap');
 
-  .header { text-align:center; margin-bottom:6px; position:relative; width:100%; max-width:460px; }
-  .btn-volver { position:absolute; top:0; left:0; background:none; border:none;
-    color:#666; font-size:0.8rem; cursor:pointer; font-family:inherit; }
-  h1 { font-size:clamp(1.5rem,7vw,2rem); font-weight:800; color:#f44; }
-  .tagline { font-size:0.65rem; color:#555; letter-spacing:3px; text-transform:uppercase; margin-top:4px; }
+:root {
+  --rojo:      #c0392b;
+  --rojo-dark: #6b140d;
+  --dorado:    #d4a017;
+  --dorado-cl: #f5c518;
+  --dorado-pl: #fde08a;
+  --negro:     #0a0a0a;
+}
 
-  /* Badge cupones */
-  #cuponesBadge { display:none; background:#c0392b; color:#fff; border-radius:20px;
-    padding:5px 14px; font-size:0.8rem; font-weight:700; margin:12px 0;
-    text-align:center; max-width:340px; animation:pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.75} }
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html,body { overscroll-behavior-y:contain; }
 
-  /* Reglas */
-  .reglas { background:#141414; border:1px solid #222; border-radius:12px;
-    padding:12px 16px; max-width:460px; width:100%; margin-bottom:20px; font-size:0.78rem; color:#888; }
-  .reglas strong { color:#ffd54f; }
-  .reglas ul { padding-left:16px; margin-top:4px; }
-  .reglas li { margin:3px 0; }
+body {
+  background:#06060a;
+  background-image:
+    radial-gradient(ellipse 900px 400px at 50% -5%, rgba(192,57,43,0.2) 0%, transparent 60%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.012) 0 2px, transparent 2px 28px);
+  min-height:100dvh;
+  display:flex; flex-direction:column; align-items:center;
+  font-family:'Lato',sans-serif;
+  padding:14px 12px 36px;
+  color:#f2f2f2;
+}
 
-  /* Cards de juegos */
-  .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px;
-    width:100%; max-width:460px; }
+/* HEADER */
+.header { text-align:center; margin-bottom:6px; position:relative; width:100%; max-width:460px; }
+.header .titulo {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.4rem,6vw,2rem); font-weight:900;
+  color:var(--dorado-cl);
+  text-shadow:1px 2px 0 var(--rojo-dark), 0 0 24px rgba(245,197,24,.3);
+  letter-spacing:2px;
+}
+.header .titulo::before,.header .titulo::after { content:'✦'; color:var(--rojo); font-size:.7rem; vertical-align:middle; margin:0 7px; opacity:.8; }
+.header .slogan { font-size:0.6rem; color:rgba(255,255,255,.4); letter-spacing:3px; text-transform:uppercase; margin-top:4px; }
+.header .app-version { position:absolute; top:0; right:0; font-size:0.55rem; color:rgba(255,255,255,.2); }
 
-  .game-card-j {
-    background:#141414; border:1px solid #222; border-radius:14px;
-    overflow:hidden; cursor:pointer; text-decoration:none; color:inherit;
-    display:flex; flex-direction:column;
-    transition:transform .15s, border-color .15s;
-  }
-  .game-card-j:active { transform:scale(.97); }
-  .game-card-j:hover { border-color:#f44; }
+/* SEPARADOR */
+.sep { width:100%; max-width:460px; height:1px;
+  background:linear-gradient(90deg,transparent,var(--dorado),transparent);
+  margin:10px 0 16px; }
 
-  .card-img { width:100%; aspect-ratio:16/9; object-fit:cover; display:block; }
-  .card-img-placeholder { width:100%; aspect-ratio:16/9; display:flex;
-    align-items:center; justify-content:center; font-size:3rem; background:#1a1a1a; }
+/* BADGE CUPONES */
+#cuponesBadge {
+  display:none; width:100%; max-width:460px;
+  background:linear-gradient(135deg,var(--rojo),var(--rojo-dark));
+  border:1px solid rgba(212,160,23,.4); border-radius:12px;
+  padding:10px 14px; margin-bottom:14px; text-align:center;
+  box-shadow:0 4px 16px rgba(192,57,43,.4);
+  cursor:pointer;
+}
+#cuponesBadge .cup-titulo { font-size:0.72rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--dorado-pl); }
+#cuponesBadge .cup-codigos { margin-top:6px; display:flex; flex-wrap:wrap; gap:5px; justify-content:center; }
+.cup-chip { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2);
+  border-radius:20px; padding:3px 10px; font-size:0.72rem; font-weight:700;
+  letter-spacing:1.5px; color:#fff; }
+#cuponesBadge .cup-sub { font-size:0.62rem; color:rgba(255,255,255,.6); margin-top:6px; }
 
-  .card-body { padding:10px 12px 14px; flex:1; display:flex; flex-direction:column; }
-  .card-emoji { font-size:1.4rem; margin-bottom:4px; }
-  .card-nombre { font-size:0.95rem; font-weight:800; color:#fff; margin-bottom:3px; }
-  .card-desc { font-size:0.72rem; color:#666; flex:1; }
-  .card-badge { margin-top:8px; display:inline-block; font-size:0.68rem; font-weight:700;
-    padding:3px 8px; border-radius:20px; }
-  .badge-cupon { background:#c0392b22; color:#c0392b; border:1px solid #c0392b44; }
-  .badge-extra { background:#1a1a2e; color:#6688cc; border:1px solid #2a2a4a44; }
+/* REGLAS */
+.reglas {
+  width:100%; max-width:460px;
+  background:rgba(255,255,255,.04); border:1px solid rgba(212,160,23,.2);
+  border-radius:12px; padding:10px 14px; margin-bottom:16px;
+  font-size:0.72rem; color:rgba(255,255,255,.55); line-height:1.6;
+}
+.reglas .reg-titulo { font-family:'Playfair Display',serif; font-size:.85rem; color:var(--dorado-cl); margin-bottom:5px; }
+.reglas ul { padding-left:14px; }
+.reglas li { margin:2px 0; }
+.reglas strong { color:var(--dorado-pl); }
 
-  .btn-jugar { margin-top:10px; width:100%; padding:9px; background:#f44; color:#fff;
-    border:none; border-radius:8px; font-weight:700; font-size:0.82rem;
-    cursor:pointer; font-family:inherit; }
+/* GRID JUEGOS */
+.juegos-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; width:100%; max-width:460px; }
 
-  /* Cupones acumulados */
-  .cupon-section { margin-top:24px; width:100%; max-width:460px;
-    background:#141414; border:1px solid #222; border-radius:14px; padding:16px; display:none; }
-  .cupon-section.show { display:block; }
-  .cupon-section h3 { font-size:0.9rem; color:#ffd54f; margin-bottom:10px; font-weight:700; }
-  .cupon-item { display:flex; justify-content:space-between; align-items:center;
-    padding:8px 0; border-bottom:1px solid #1e1e1e; font-size:0.8rem; }
-  .cupon-item:last-child { border-bottom:none; }
-  .cupon-cod { font-weight:800; letter-spacing:2px; color:#fff; }
-  .cupon-val { color:#ffd54f; font-weight:700; }
-  .cupon-aviso { font-size:0.68rem; color:#c0392b; margin-top:8px; }
+.juego-card {
+  position:relative; border-radius:14px; overflow:hidden;
+  text-decoration:none; color:#fff; display:block;
+  box-shadow:0 6px 20px rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.08);
+  aspect-ratio:3/4;
+  transition:transform .15s, box-shadow .15s;
+}
+.juego-card:active { transform:scale(.97); box-shadow:0 3px 10px rgba(0,0,0,.5); }
 
-  footer { margin-top:28px; font-size:0.7rem; color:#333; text-align:center; }
+/* Fondo carátula difuminada */
+.card-bg {
+  position:absolute; inset:0;
+  background-size:cover; background-position:right center;
+  filter:blur(1px) brightness(.35) saturate(.8);
+}
+/* Gradiente encima */
+.card-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,.92) 0%, rgba(0,0,0,.5) 45%, rgba(0,0,0,.15) 100%);
+}
+
+/* Contenido */
+.card-content {
+  position:relative; z-index:2;
+  height:100%; display:flex; flex-direction:column; padding:10px;
+}
+.card-top { flex:1; display:flex; align-items:flex-start; justify-content:flex-end; }
+.card-badge-chance {
+  background:rgba(0,0,0,.65); border:1px solid rgba(212,160,23,.5);
+  border-radius:20px; padding:3px 8px;
+  font-size:0.58rem; font-weight:900; color:var(--dorado-cl);
+  letter-spacing:.5px; text-transform:uppercase;
+}
+.card-badge-chance.alta { border-color:rgba(39,174,96,.6); color:#4ade80; background:rgba(0,40,0,.6); }
+
+.card-bottom { }
+.card-emoji  { font-size:1.8rem; margin-bottom:4px; display:block; filter:drop-shadow(0 2px 4px rgba(0,0,0,.5)); }
+.card-nombre {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(.85rem,3.5vw,1rem); font-weight:900;
+  color:#fff; line-height:1.2; margin-bottom:3px;
+  text-shadow:0 2px 6px rgba(0,0,0,.6);
+}
+.card-desc { font-size:.62rem; color:rgba(255,255,255,.6); line-height:1.4; margin-bottom:8px; }
+
+.btn-jugar {
+  display:block; width:100%; padding:8px 0;
+  background:linear-gradient(135deg,var(--rojo),var(--rojo-dark));
+  border:none; border-radius:8px; color:#fff;
+  font-family:'Lato',sans-serif; font-weight:900;
+  font-size:.7rem; letter-spacing:1px; text-transform:uppercase;
+  cursor:pointer; text-align:center;
+  box-shadow:0 2px 0 rgba(0,0,0,.4);
+}
+.btn-jugar.dorado { background:linear-gradient(135deg,var(--dorado-cl),var(--dorado)); color:var(--rojo-dark); }
+
+/* BOTÓN CATÁLOGO */
+.btn-catalogo {
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  width:100%; max-width:460px; padding:14px;
+  background:linear-gradient(135deg,var(--dorado-cl),var(--dorado));
+  border:none; border-radius:12px; color:var(--rojo-dark);
+  font-family:'Playfair Display',serif; font-weight:900;
+  font-size:.95rem; letter-spacing:1px; cursor:pointer;
+  text-decoration:none; margin-top:14px;
+  box-shadow:0 4px 0 var(--rojo-dark), 0 8px 20px rgba(212,160,23,.3);
+  transition:transform .1s, box-shadow .1s;
+}
+.btn-catalogo:active { transform:translateY(3px); box-shadow:0 1px 0 var(--rojo-dark); }
+
+.instructions { margin-top:10px; color:rgba(255,255,255,.2); font-size:.6rem; text-align:center; letter-spacing:1px; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <button class="btn-volver" onclick="history.back()">← Volver</button>
-  <h1>🎮 Zona de Juegos</h1>
-  <div class="tagline">Almacén Copihue · PS2</div>
+  <div class="titulo">Zona de Juegos</div>
+  <div class="slogan">Almacén Copihue · ganá cupones para tus juegos PS2</div>
+  <div class="app-version">v2</div>
 </div>
 
-<div id="cuponesBadge">🎟️ Tenés <span id="cuponesCount">0</span> cupón(es) — ¡usalo al comprar!</div>
+<div class="sep"></div>
+
+<div id="cuponesBadge" onclick="window.location.href='https://juegos-ps2.vercel.app'">
+  <div class="cup-titulo">🎟️ Tus cupones acumulados</div>
+  <div class="cup-codigos" id="cupChips"></div>
+  <div class="cup-sub">⚠️ Se pierden si salís sin comprar · Tocá para ir al catálogo</div>
+</div>
 
 <div class="reglas">
-  <strong>🎟️ ¿Cómo funcionan los cupones?</strong>
+  <div class="reg-titulo">🎟️ ¿Cómo funcionan los cupones?</div>
   <ul>
-    <li>Jugá Memoria o Puzzle → a veces ganás un cupón <strong>$700 OFF</strong> en 1 juego</li>
-    <li>Los cupones se acumulan mientras navegás</li>
-    <li>Al confirmar tu carrito se aplican automáticamente</li>
+    <li>Jugá y acumulás cupones <strong>$700 OFF</strong> en 1 juego PS2</li>
+    <li><strong>Memoria y Puzzle</strong> → hasta 40% chance (esfuerzo = más premio)</li>
+    <li><strong>Raspadita y Tragamonedas</strong> → 8% chance (pura suerte)</li>
+    <li>Al confirmar tu carrito se aplican solos</li>
     <li><strong>Si salís sin comprar, los perdés</strong></li>
   </ul>
 </div>
 
-<div class="grid">
+<div class="juegos-grid">
 
-  <a class="game-card-j" href="ps2-memoria.html">
-    <div class="card-img-placeholder">🃏</div>
-    <div class="card-body">
-      <div class="card-emoji">🃏</div>
-      <div class="card-nombre">Memoria PS2</div>
-      <div class="card-desc">Encontrá los pares de carátulas. Fácil y difícil.</div>
-      <span class="card-badge badge-cupon">🎟️ Puede dar cupón</span>
-      <button class="btn-jugar">Jugar →</button>
+  <a class="juego-card" href="ps2-memoria.html">
+    <div class="card-bg" style="background-image:url('https://juegos-ps2.vercel.app/caratulas/resident_evil_4.jpg')"></div>
+    <div class="card-overlay"></div>
+    <div class="card-content">
+      <div class="card-top">
+        <span class="card-badge-chance alta">hasta 40%</span>
+      </div>
+      <div class="card-bottom">
+        <span class="card-emoji">🃏</span>
+        <div class="card-nombre">Memoria PS2</div>
+        <div class="card-desc">Encontrá los pares de carátulas. Mejor jugás, más chances.</div>
+        <button class="btn-jugar">Jugar →</button>
+      </div>
     </div>
   </a>
 
-  <a class="game-card-j" href="ps2-puzzle.html">
-    <div class="card-img-placeholder">🔢</div>
-    <div class="card-body">
-      <div class="card-emoji">🔢</div>
-      <div class="card-nombre">Puzzle 15</div>
-      <div class="card-desc">Ordená las fichas del 1 al 15. Clásico.</div>
-      <span class="card-badge badge-cupon">🎟️ Puede dar cupón</span>
-      <button class="btn-jugar">Jugar →</button>
+  <a class="juego-card" href="ps2-puzzle.html">
+    <div class="card-bg" style="background-image:url('https://juegos-ps2.vercel.app/caratulas/dragon_ball_z_tenkaichi_3.jpg')"></div>
+    <div class="card-overlay"></div>
+    <div class="card-content">
+      <div class="card-top">
+        <span class="card-badge-chance alta">hasta 40%</span>
+      </div>
+      <div class="card-bottom">
+        <span class="card-emoji">🔢</span>
+        <div class="card-nombre">Puzzle 15</div>
+        <div class="card-desc">Ordená del 1 al 15. Menos movimientos = más chances.</div>
+        <button class="btn-jugar">Jugar →</button>
+      </div>
     </div>
   </a>
 
-  <a class="game-card-j" href="ps2-raspadita.html">
-    <div class="card-img-placeholder">🌺</div>
-    <div class="card-body">
-      <div class="card-emoji">🌺</div>
-      <div class="card-nombre">Raspadita PS2</div>
-      <div class="card-desc">Raspá 3 iguales y ganás cupón. Menos chances — sin esfuerzo.</div>
-      <span class="card-badge badge-cupon">🎟️ 8% de chance</span>
-      <button class="btn-jugar">Jugar →</button>
+  <a class="juego-card" href="ps2-raspadita.html">
+    <div class="card-bg" style="background-image:url('https://juegos-ps2.vercel.app/caratulas/mortal_kombat_armagedon.jpg')"></div>
+    <div class="card-overlay"></div>
+    <div class="card-content">
+      <div class="card-top">
+        <span class="card-badge-chance">8% chance</span>
+      </div>
+      <div class="card-bottom">
+        <span class="card-emoji">🎟️</span>
+        <div class="card-nombre">Raspadita PS2</div>
+        <div class="card-desc">Raspá 3 iguales y ganás. Pura suerte.</div>
+        <button class="btn-jugar dorado">Jugar →</button>
+      </div>
     </div>
   </a>
 
-  <a class="game-card-j" href="ps2-tragamonedas.html">
-    <div class="card-img-placeholder">🎰</div>
-    <div class="card-body">
-      <div class="card-emoji">🎰</div>
-      <div class="card-nombre">Tragamonedas PS2</div>
-      <div class="card-desc">Girá los carretes. 3 iguales = cupón. Suerte pura.</div>
-      <span class="card-badge badge-cupon">🎟️ 8% de chance</span>
-      <button class="btn-jugar">Jugar →</button>
+  <a class="juego-card" href="ps2-tragamonedas.html">
+    <div class="card-bg" style="background-image:url('https://juegos-ps2.vercel.app/caratulas/god_of_war_1.jpg')"></div>
+    <div class="card-overlay"></div>
+    <div class="card-content">
+      <div class="card-top">
+        <span class="card-badge-chance">8% chance</span>
+      </div>
+      <div class="card-bottom">
+        <span class="card-emoji">🎰</span>
+        <div class="card-nombre">Tragamonedas</div>
+        <div class="card-desc">Girá los carretes con carátulas PS2. 3 iguales = cupón.</div>
+        <button class="btn-jugar dorado">Jugar →</button>
+      </div>
     </div>
   </a>
 
 </div>
 
-<!-- Cupones acumulados -->
-<div class="cupon-section" id="cuponSection">
-  <h3>🎟️ Tus cupones acumulados</h3>
-  <div id="cuponList"></div>
-  <div class="cupon-aviso">⚠️ Se pierden si salís sin comprar</div>
-  <a href="https://juegos-ps2.vercel.app" style="display:block; margin-top:12px;
-    background:#25D366; color:#fff; text-align:center; padding:10px; border-radius:8px;
-    font-weight:700; text-decoration:none; font-size:0.88rem;">
-    🛒 Ir al catálogo a comprar
-  </a>
-</div>
+<a class="btn-catalogo" href="https://juegos-ps2.vercel.app">
+  🛒 Ir al catálogo de juegos PS2
+</a>
 
-<footer>Almacén Copihue 🌸 · juegos-ps2.vercel.app</footer>
+<div class="instructions">Almacén Copihue 🌸 · juegos-ps2.vercel.app</div>
 
 <script>
-const STORAGE_KEY = 'ps2_cupones';
-function getCupones() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); } catch { return []; } }
+const STORAGE_KEY='ps2_cupones';
+function getCupones(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');}catch{return[];} }
 
 function renderCupones() {
-  const c = getCupones();
-  const badge = document.getElementById('cuponesBadge');
-  const section = document.getElementById('cuponSection');
-  document.getElementById('cuponesCount').textContent = c.length;
-  badge.style.display = c.length > 0 ? 'block' : 'none';
-
-  if (c.length > 0) {
-    section.classList.add('show');
-    document.getElementById('cuponList').innerHTML = c.map(cu => `
-      <div class="cupon-item">
-        <span class="cupon-cod">${cu.codigo}</span>
-        <span class="cupon-val">$${cu.descuento} OFF</span>
-      </div>`).join('');
+  const c=getCupones();
+  const badge=document.getElementById('cuponesBadge');
+  const chips=document.getElementById('cupChips');
+  if(c.length>0){
+    badge.style.display='block';
+    chips.innerHTML=c.map(cu=>`<span class="cup-chip">${cu.codigo}</span>`).join('');
   } else {
-    section.classList.remove('show');
+    badge.style.display='none';
   }
 }
-
 renderCupones();
-// Refrescar al volver de un juego
-window.addEventListener('focus', renderCupones);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) renderCupones(); });
+window.addEventListener('focus',renderCupones);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) renderCupones(); });
 </script>
 </body>
 </html>
