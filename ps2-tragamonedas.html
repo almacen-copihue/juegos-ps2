@@ -439,7 +439,7 @@ async function girar() {
     fetchG('registrarCupon',{codigo,juego:'ps2-tragamonedas',descuento:700}).catch(()=>{});
   } else {
     document.getElementById('resultText').textContent='😔 Sin suerte';
-    document.getElementById('resultSub').textContent=girosRestantes>0?`Te quedan ${girosRestantes} giro${girosRestantes>1?'s':'`}`:undefined`Sin giros — ¡jugá Memoria para más chances!`;
+    document.getElementById('resultSub').textContent=girosRestantes>0?`Te quedan ${girosRestantes} giro${girosRestantes>1?'s':''}`:'Sin giros — ¡jugá Memoria para más chances!';
   }
 
   girando=false;
