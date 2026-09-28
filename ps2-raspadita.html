@@ -243,7 +243,7 @@ const JUEGOS = [
 ];
 
 const LINEAS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-const APP_VERSION = 3; // ← única fuente: sumar +1 en cada archivo nuevo
+const APP_VERSION = 4; // ← única fuente: sumar +1 en cada archivo nuevo
 document.title = '🎮 Raspadita PS2 v' + APP_VERSION;
 document.querySelector('.app-version').textContent = 'v' + APP_VERSION;
 let grid=[], revealed=0, gameOver=false;
@@ -332,14 +332,14 @@ function setupScratch(canvas,idx){
   function scratch(e){
     if(!painting||gameOver)return; e.preventDefault();
     const{x,y}=getPos(e);
-    ctx.globalCompositeOperation='destination-out';
+    ctx.globalCompositeOperation='destination-out'; ctx.fillStyle='#000'; // opaco: borra 100% por pasada
     ctx.beginPath(); ctx.arc(x,y,32,0,Math.PI*2); ctx.fill();
     checkReveal();
   }
   function checkReveal(){
     const d=ctx.getImageData(0,0,200,200).data;
     let t=0; for(let i=3;i<d.length;i+=4) if(d[i]<128) t++;
-    if(t/(200*200)>0.35&&!canvas.dataset.counted){
+    if(t/(200*200)>0.5&&!canvas.dataset.counted){
       canvas.dataset.counted='1'; revealed++;
       if(revealed===9) mostrarResultado();
     }
