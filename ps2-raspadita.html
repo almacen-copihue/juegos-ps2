@@ -170,6 +170,7 @@ body {
   <div class="nombre">Raspadita PS2</div>
   <div class="slogan">Almacén Copihue · raspá y ganá cupones</div>
   <div class="app-version"></div>
+  <div class="app-debug" id="appDebug" style="text-align:center;font-size:.62rem;color:#6b140d;font-family:monospace;word-break:break-all;min-height:1em"></div>
 </div>
 
 <div class="ticket">
@@ -243,9 +244,15 @@ const JUEGOS = [
 ];
 
 const LINEAS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-const APP_VERSION = 4; // ← única fuente: sumar +1 en cada archivo nuevo
+const APP_VERSION = 5; // ← única fuente: sumar +1 en cada archivo nuevo
 document.title = '🎮 Raspadita PS2 v' + APP_VERSION;
 document.querySelector('.app-version').textContent = 'v' + APP_VERSION;
+// DIAGNÓSTICO temporal: casillas contadas y % raspado de cada una, y errores JS
+function updateDebug(){
+  const ps=[...document.querySelectorAll('.scratch-layer')].map(c=>c.dataset.pct||0).join(' ');
+  document.getElementById('appDebug').textContent='raspadas '+revealed+'/9 · % '+ps;
+}
+window.addEventListener('error',e=>{ document.getElementById('appDebug').textContent='ERROR: '+e.message+' (línea '+e.lineno+')'; });
 let grid=[], revealed=0, gameOver=false;
 let destinoVolver='ps2-juegos.html';
 
@@ -339,10 +346,12 @@ function setupScratch(canvas,idx){
   function checkReveal(){
     const d=ctx.getImageData(0,0,200,200).data;
     let t=0; for(let i=3;i<d.length;i+=4) if(d[i]<128) t++;
+    canvas.dataset.pct=Math.round(t/400);
     if(t/(200*200)>0.5&&!canvas.dataset.counted){
       canvas.dataset.counted='1'; revealed++;
       if(revealed===9) mostrarResultado();
     }
+    updateDebug();
   }
   canvas.addEventListener('mousedown', e=>{painting=true;scratch(e);});
   canvas.addEventListener('mousemove', scratch);
