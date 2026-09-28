@@ -328,13 +328,13 @@ function setupScratch(canvas,idx){
     if(!painting||gameOver)return; e.preventDefault();
     const{x,y}=getPos(e);
     ctx.globalCompositeOperation='destination-out';
-    ctx.beginPath(); ctx.arc(x,y,24,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x,y,32,0,Math.PI*2); ctx.fill();
     checkReveal();
   }
   function checkReveal(){
     const d=ctx.getImageData(0,0,200,200).data;
     let t=0; for(let i=3;i<d.length;i+=4) if(d[i]<128) t++;
-    if(t/(200*200)>0.65&&!canvas.dataset.counted){
+    if(t/(200*200)>0.35&&!canvas.dataset.counted){
       canvas.dataset.counted='1'; revealed++;
       if(revealed===9) mostrarResultado();
     }
