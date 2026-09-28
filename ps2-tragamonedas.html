@@ -129,10 +129,10 @@ body {
   position:relative;
 }
 .reel::before,.reel::after {
-  content:''; position:absolute; left:0; right:0; height:62px; z-index:2; pointer-events:none;
+  content:''; position:absolute; left:0; right:0; height:24px; z-index:2; pointer-events:none;
 }
-.reel::before { top:0;    background:linear-gradient(to bottom,rgba(5,5,5,.94) 0%,rgba(5,5,5,.55) 65%,transparent); }
-.reel::after  { bottom:0; background:linear-gradient(to top,   rgba(5,5,5,.94) 0%,rgba(5,5,5,.55) 65%,transparent); }
+.reel::before { top:0;    background:linear-gradient(to bottom,rgba(5,5,5,.85) 0%,rgba(5,5,5,.4) 60%,transparent); }
+.reel::after  { bottom:0; background:linear-gradient(to top,   rgba(5,5,5,.85) 0%,rgba(5,5,5,.4) 60%,transparent); }
 .reel-strip { display:flex; flex-direction:column; will-change:transform; }
 .reel-sym {
   height:80px; min-height:80px;
@@ -364,17 +364,35 @@ function renderFichas() {
 }
 
 // ── CARRETES ─────────────────────────────────────────────────
-function buildStrip(idx, finalJuego) {
-  const rs = document.getElementById('rs'+idx);
-  const items = [];
-  for(let i=0;i<16;i++) items.push(JUEGOS[Math.floor(Math.random()*JUEGOS.length)]);
-  items.push(finalJuego);
-  rs.innerHTML = items.map(j=>`
+// Cada carrete muestra 3 filas (80px c/u). La del MEDIO es la del premio (payline).
+const ROW_H = 80;
+const rnd = () => JUEGOS[Math.floor(Math.random()*JUEGOS.length)];
+const visibles = [[rnd(),rnd(),rnd()],[rnd(),rnd(),rnd()],[rnd(),rnd(),rnd()]]; // [arriba, medio, abajo]
+
+function symHTML(j) {
+  return `
     <div class="reel-sym">
       <img src="${BASE_IMG}${j.img}" alt="${j.nombre}"
            onerror="this.style.display='none'">
       <div class="sym-label">${j.nombre}</div>
-    </div>`).join('');
+    </div>`;
+}
+
+function pintarReposo(idx) {
+  const rs = document.getElementById('rs'+idx);
+  rs.style.transition = 'none';
+  rs.style.transform  = 'translateY(0)';
+  rs.innerHTML = visibles[idx].map(symHTML).join('');
+}
+
+function buildStrip(idx, finalJuego) {
+  const rs = document.getElementById('rs'+idx);
+  const items = [...visibles[idx]];                       // arranca mostrando lo que ya se veía
+  for(let i=0;i<16;i++) items.push(rnd());                // relleno del giro
+  const arriba = rnd(), abajo = rnd();
+  items.push(arriba, finalJuego, abajo);                  // final queda en el medio
+  visibles[idx] = [arriba, finalJuego, abajo];
+  rs.innerHTML = items.map(symHTML).join('');
   return items.length;
 }
 
@@ -388,7 +406,7 @@ function animarReel(idx, finalJuego, delay) {
       requestAnimationFrame(()=>requestAnimationFrame(()=>{
         const dur = 0.7 + idx * 0.18;
         rs.style.transition = `transform ${dur}s cubic-bezier(.25,.1,.25,1)`;
-        rs.style.transform  = `translateY(${-(tot-1)*80}px)`;
+        rs.style.transform  = `translateY(${-(tot-3)*ROW_H}px)`;   // últimas 3 filas a la vista
         setTimeout(res, dur*1000+50);
       }));
     }, delay);
@@ -483,12 +501,8 @@ window.addEventListener('popstate',()=>{
 
 document.getElementById('btnGirar').addEventListener('click',girar);
 
-// Init carretes en reposo
-[0,1,2].forEach(i=>{
-  const rs=document.getElementById('rs'+i);
-  const j=JUEGOS[Math.floor(Math.random()*JUEGOS.length)];
-  rs.innerHTML=`<div class="reel-sym"><img src="${BASE_IMG}${j.img}" alt="${j.nombre}"><div class="sym-label">${j.nombre}</div></div>`;
-});
+// Init carretes en reposo (3 filas)
+[0,1,2].forEach(pintarReposo);
 
 renderFichas();
 </script>
