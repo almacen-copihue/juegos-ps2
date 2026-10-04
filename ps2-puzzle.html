@@ -76,6 +76,9 @@
   .ranking-row .ini { font-weight:800; letter-spacing:1px; color:#f5c518; }
   .ranking-row .det { color:#888; font-size:0.7rem; }
   .ranking-row .pts { text-align:right; font-weight:700; }
+  .ranking-row.mio { background:rgba(245,197,24,.16); border:1px solid #f5c518; border-radius:8px;
+    padding:6px 6px; margin:2px -6px; box-shadow:0 0 10px rgba(245,197,24,.35); }
+  .ranking-row.mio .pts { color:#f5c518; }
   .ranking-empty { text-align:center; font-size:0.76rem; color:#666; padding:6px 0; }
 
   .modal-overlay { display:none; position:fixed; inset:0; z-index:999;
@@ -288,12 +291,13 @@ async function ganar() {
   } catch {}
 }
 
-function mostrarRanking(records) {
+function mostrarRanking(records, mio) {
   document.getElementById('ranking').style.display='block';
   const cont=document.getElementById('rankingList');
   if(!records||!records.length){cont.innerHTML='<div class="ranking-empty">¡Sé el primero!</div>';return;}
+  const idxMio=mio?records.findIndex(r=>r.iniciales===mio.iniciales&&r.puntaje===mio.puntaje&&r.detalle===mio.detalle):-1;
   cont.innerHTML=records.map((r,i)=>`
-    <div class="ranking-row">
+    <div class="ranking-row${i===idxMio?' mio':''}">
       <span class="pos">${i+1}º</span><span class="ini">${r.iniciales}</span>
       <span class="det">${r.detalle}</span><span class="pts">${r.puntaje}</span>
     </div>`).join('');
@@ -310,7 +314,10 @@ async function guardarIniciales() {
   try {
     await fetchGames('guardarRecord',{juego:NOMBRE_JUEGO,iniciales:ini,puntaje:ultimoPuntaje.puntaje,detalle:ultimoPuntaje.detalle});
     const res=await fetchGames('obtenerRecords',{juego:NOMBRE_JUEGO});
-    if(res.ok&&res.records) mostrarRanking(res.records);
+    if(res.ok&&res.records) {
+      mostrarRanking(res.records,{iniciales:ini,puntaje:ultimoPuntaje.puntaje,detalle:ultimoPuntaje.detalle});
+      const el=document.querySelector('.ranking-row.mio'); if(el) el.scrollIntoView({block:'nearest',behavior:'smooth'});
+    }
   } catch {}
   finally {
     document.getElementById('modalIniciales').classList.remove('activo');
