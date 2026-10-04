@@ -8671,10 +8671,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── INTERCEPTAR BOTÓN ATRÁS ──
     history.pushState(null, '', location.href);
+    let saliendoConfirmado = false; // evita re-interceptar el back() que dispara el propio "Aceptar"
     window.addEventListener('popstate', () => {
-        // Volver a pushear para que el botón atrás no salga
-        history.pushState(null, '', location.href);
-        // Si hay un modal abierto, cerrarlo primero
+        if (saliendoConfirmado) return; // ya confirmó salir: dejar pasar esta vez
+        // Si hay un modal abierto, cerrarlo primero (y volver a frenar el atrás)
         const modales = ['modalCarrito','modalBusqueda','modalPedidoDirecto'];
         let modalAbierto = false;
         modales.forEach(id => {
@@ -8684,10 +8684,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalAbierto = true;
             }
         });
-        if (modalAbierto) return;
+        if (modalAbierto) { history.pushState(null, '', location.href); return; }
         // Si no había modal, preguntar si quiere salir
         const salir = confirm("¿Querés salir de Almacén Copihue?");
-        if (salir) history.back();
+        if (salir) { saliendoConfirmado = true; history.back(); }
+        else history.pushState(null, '', location.href); // se queda: volver a frenar
     });
     window.addEventListener("scroll", () => {
         btnTop.style.display = window.scrollY > 300 ? "block" : "none";
