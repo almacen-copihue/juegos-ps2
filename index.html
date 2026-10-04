@@ -8063,7 +8063,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const GAMES_URL     = "https://script.google.com/macros/s/AKfycbyegP1TSQSccsjYorXIpgAJH1nVAO9fzmg3hwKQNk116Mgx1M6Rs1XUn0JkiusVmGareg/exec";
 
     // ── CUPONES ──
-    function getCupones() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY_CUP)||'[]'); } catch { return []; } }
+    const CUPON_VENCE_MS = 48*60*60*1000; // 48hs: si no comprás en ese lapso, se pierden
+    function getCupones() {
+        let arr;
+        try { arr = JSON.parse(localStorage.getItem(STORAGE_KEY_CUP)||'[]'); } catch { arr = []; }
+        const ahora = Date.now();
+        let tocado = false;
+        arr = arr.filter(c => {
+            if (!c.ts) { c.ts = ahora; tocado = true; return true; } // cupón viejo sin fecha: lo sellamos ahora
+            if (ahora - c.ts > CUPON_VENCE_MS) { tocado = true; return false; } // vencido
+            return true;
+        });
+        if (tocado) saveCupones(arr);
+        return arr;
+    }
     function saveCupones(arr) { try { localStorage.setItem(STORAGE_KEY_CUP, JSON.stringify(arr)); } catch {} }
     function actualizarCuponesBanner() {
         const c = getCupones();
